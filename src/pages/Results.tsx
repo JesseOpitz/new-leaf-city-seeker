@@ -82,8 +82,8 @@ const Results = () => {
                   key={`good-${index}`}
                   city={city.city}
                   state={city.state}
-                  description={city.positive_text || "A great match based on your preferences."}
-                  wikipediaUrl={city.wikipedia_url}
+                  description={city.positive || "A great match based on your preferences."}
+                  wikipediaUrl={city.Wikipedia_URL}
                   thumbnailUrl={city.thumbnail_url}
                   isGoodMatch={true}
                 />
@@ -103,8 +103,8 @@ const Results = () => {
                     key={`bad-${index}`}
                     city={city.city}
                     state={city.state}
-                    description={city.negative_text || "This city may not align well with your preferences."}
-                    wikipediaUrl={city.wikipedia_url}
+                    description={city.negative || "This city may not align well with your preferences."}
+                    wikipediaUrl={city.Wikipedia_URL}
                     thumbnailUrl={city.thumbnail_url}
                     isGoodMatch={false}
                   />

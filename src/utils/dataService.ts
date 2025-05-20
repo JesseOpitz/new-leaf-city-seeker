@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -14,11 +15,6 @@ export interface City {
   positive?: string;
   negative?: string;
   Wikipedia_URL?: string;
-  positive_text?: string;
-  negative_text?: string;
-  wikipedia_url?: string;
-  thumbnail_url?: string;
-  score?: number;
 }
 
 export interface MatchResults {
@@ -151,21 +147,13 @@ export const calculateCityScores = (
   
   // Get top and bottom cities based on cityCount
   const goodMatches = scoredCities.slice(0, cityCount).map(city => ({
-    city: city.city,
-    state: city.state,
-    positive_text: city.positive,
-    negative_text: city.negative,
-    wikipedia_url: city.Wikipedia_URL,
+    ...city,
     thumbnail_url: getThumbnailUrl(city.city, city.state)
   }));
   
   const badMatches = showBadMatches 
     ? scoredCities.slice(-cityCount).map(city => ({
-        city: city.city,
-        state: city.state,
-        positive_text: city.positive,
-        negative_text: city.negative,
-        wikipedia_url: city.Wikipedia_URL,
+        ...city,
         thumbnail_url: getThumbnailUrl(city.city, city.state)
       }))
     : [];

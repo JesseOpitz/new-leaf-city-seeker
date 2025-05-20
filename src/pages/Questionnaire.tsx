@@ -125,7 +125,7 @@ const Questionnaire = () => {
     
     try {
       // Create full preferences array (answers + cityCount + showBadMatches)
-      const fullPreferences = [...answers, cityCount, showBadMatches];
+      const fullPreferences: (number | boolean)[] = [...answers, cityCount, showBadMatches];
       
       // Calculate city matches using our utility function
       const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
