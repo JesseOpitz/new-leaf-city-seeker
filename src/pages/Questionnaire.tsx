@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import QuestionnaireSlider from '@/components/QuestionnaireSlider';
+import { loadCityData, calculateCityScores } from '@/utils/dataService';
 
 // Define the question steps
 const questionSteps = [
@@ -71,6 +72,19 @@ const Questionnaire = () => {
   const [cityCount, setCityCount] = useState<number>(5);
   const [showBadMatches, setShowBadMatches] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [cityData, setCityData] = useState<any[]>([]);
+  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
+
+  // Load city data when component mounts
+  useEffect(() => {
+    const fetchCityData = async () => {
+      const data = await loadCityData();
+      setCityData(data);
+      setDataLoaded(true);
+    };
+    
+    fetchCityData();
+  }, []);
 
   // Progress calculation
   const totalSteps = questionSteps.length + 1; // +1 for the final options step
@@ -99,71 +113,36 @@ const Questionnaire = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
-    // Create payload with all answers plus the city count and bad matches preference
-    const payload = {
-      answers: [...answers, cityCount, showBadMatches]
-    };
+    if (!dataLoaded || cityData.length === 0) {
+      toast({
+        title: "Error",
+        description: "City data has not been loaded yet. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
     
     try {
-      // For now, this will be simulated without calling a real API
-      // In production, this would call the backend API
-      setTimeout(() => {
-        // Mock response data
-        const mockGoodMatches = [
-          {
-            city: "Portland",
-            state: "Oregon",
-            positive_text: "Known for its progressive values, vibrant food scene, and proximity to nature with mountains, forests, and the Pacific coast all nearby.",
-            wikipedia_url: "https://en.wikipedia.org/wiki/Portland,_Oregon",
-            thumbnail_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Portland_Oregon_skyline_4.jpg/320px-Portland_Oregon_skyline_4.jpg"
-          },
-          {
-            city: "Minneapolis",
-            state: "Minnesota",
-            positive_text: "Offers a strong job market, excellent parks system, vibrant arts scene, and progressive values with a focus on sustainability and livability.",
-            wikipedia_url: "https://en.wikipedia.org/wiki/Minneapolis",
-            thumbnail_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/MinneapolisCollage.jpg/320px-MinneapolisCollage.jpg"
-          },
-          {
-            city: "Austin",
-            state: "Texas",
-            positive_text: "A tech hub with a thriving music scene, diverse food options, outdoor recreation opportunities, and a young, educated population.",
-            wikipedia_url: "https://en.wikipedia.org/wiki/Austin,_Texas",
-            thumbnail_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Austin_August_2019_19_%28skyline%29.jpg/320px-Austin_August_2019_19_%28skyline%29.jpg"
-          }
-        ];
-        
-        const mockBadMatches = showBadMatches ? [
-          {
-            city: "Detroit",
-            state: "Michigan",
-            negative_text: "While experiencing revitalization, still faces challenges with crime, poverty, and declining infrastructure in many neighborhoods.",
-            wikipedia_url: "https://en.wikipedia.org/wiki/Detroit",
-            thumbnail_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Detroit_Montage_2020.jpg/320px-Detroit_Montage_2020.jpg"
-          },
-          {
-            city: "Stockton",
-            state: "California",
-            negative_text: "Struggles with high crime rates, unemployment, and financial instability, despite being in proximity to the Bay Area.",
-            wikipedia_url: "https://en.wikipedia.org/wiki/Stockton,_California",
-            thumbnail_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Stockton_waterfront_night_skyline_and_arena.jpg/320px-Stockton_waterfront_night_skyline_and_arena.jpg"
-          }
-        ] : [];
-        
-        // Store results in localStorage
-        localStorage.setItem('matchResults', JSON.stringify({
-          good_matches: mockGoodMatches.slice(0, cityCount),
-          bad_matches: mockBadMatches,
-          timestamp: new Date().toISOString(),
-          userPreferences: answers
-        }));
-        
-        setIsSubmitting(false);
-        navigate('/results');
-      }, 2000);
+      // Create full preferences array (answers + cityCount + showBadMatches)
+      const fullPreferences = [...answers, cityCount, showBadMatches];
+      
+      // Calculate city matches using our utility function
+      const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
+      
+      // Store results in localStorage
+      localStorage.setItem('matchResults', JSON.stringify({
+        good_matches: goodMatches,
+        bad_matches: badMatches,
+        timestamp: new Date().toISOString(),
+        userPreferences: fullPreferences
+      }));
+      
+      setIsSubmitting(false);
+      navigate('/results');
       
     } catch (error) {
-      console.error("Error submitting questionnaire:", error);
+      console.error("Error processing questionnaire:", error);
       setIsSubmitting(false);
       toast({
         title: "Error",
@@ -277,13 +256,18 @@ const Questionnaire = () => {
               {isLastStep && (
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !dataLoaded}
                   className="leaf-bg-gradient hover:opacity-90"
                 >
                   {isSubmitting ? (
                     <>
                       <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
                       Finding cities...
+                    </>
+                  ) : !dataLoaded ? (
+                    <>
+                      <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                      Loading data...
                     </>
                   ) : (
                     "Find My Cities"

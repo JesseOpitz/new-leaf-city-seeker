@@ -5,22 +5,7 @@ import { Button } from "@/components/ui/button";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import CityCard from '@/components/CityCard';
-
-interface City {
-  city: string;
-  state: string;
-  positive_text?: string;
-  negative_text?: string;
-  wikipedia_url?: string;
-  thumbnail_url?: string;
-}
-
-interface MatchResults {
-  good_matches: City[];
-  bad_matches: City[];
-  timestamp: string;
-  userPreferences: number[];
-}
+import { MatchResults } from '@/utils/dataService';
 
 const Results = () => {
   const navigate = useNavigate();
