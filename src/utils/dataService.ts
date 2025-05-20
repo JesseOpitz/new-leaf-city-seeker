@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -15,13 +14,18 @@ export interface City {
   positive?: string;
   negative?: string;
   Wikipedia_URL?: string;
+  positive_text?: string;
+  negative_text?: string;
+  wikipedia_url?: string;
+  thumbnail_url?: string;
+  score?: number;
 }
 
 export interface MatchResults {
   good_matches: City[];
   bad_matches: City[];
   timestamp: string;
-  userPreferences: number[];
+  userPreferences: (number | boolean)[];
 }
 
 // Load and parse Excel file
@@ -60,23 +64,23 @@ export const getThumbnailUrl = (city: string, state: string): string => {
 // Calculate city scores based on user preferences
 export const calculateCityScores = (
   cities: City[], 
-  preferences: number[]
+  preferences: (number | boolean)[]
 ): { goodMatches: City[], badMatches: City[] } => {
   if (!cities || cities.length === 0) {
     return { goodMatches: [], badMatches: [] };
   }
 
   // Extract configuration from preferences
-  const safetyPref = preferences[0];
-  const employmentPref = preferences[1];
-  const diversityPref = preferences[2];
-  const affordabilityPref = preferences[3];
-  const walkabilityPref = preferences[4];
-  const remoteWorkPref = preferences[5];
-  const densityPref = preferences[6]; // 0-8: rural to urban
-  const politicsPref = preferences[7]; // 0-8: conservative to liberal
-  const cityCount = preferences[8] || 5;
-  const showBadMatches = preferences[9] || false;
+  const safetyPref = preferences[0] as number;
+  const employmentPref = preferences[1] as number;
+  const diversityPref = preferences[2] as number;
+  const affordabilityPref = preferences[3] as number;
+  const walkabilityPref = preferences[4] as number;
+  const remoteWorkPref = preferences[5] as number;
+  const densityPref = preferences[6] as number; // 0-8: rural to urban
+  const politicsPref = preferences[7] as number; // 0-8: conservative to liberal
+  const cityCount = preferences[8] as number || 5;
+  const showBadMatches = preferences[9] as boolean || false;
   
   // Find max ranks for normalization
   const maxRanks = {
