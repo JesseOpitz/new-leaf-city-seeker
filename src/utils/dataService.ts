@@ -24,38 +24,22 @@ export interface MatchResults {
   userPreferences: (number | boolean)[];
 }
 
-// Load and parse Excel file with more robust error handling for Netlify
+// Load and parse Excel file with robust error handling for Netlify
 export const loadCityData = async (): Promise<City[]> => {
   try {
-    const possiblePaths = [
-      '/masterfile.xlsx',
-      './masterfile.xlsx',
-      '../masterfile.xlsx',
-      'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx'
-    ];
+    console.log('Starting to load city data...');
     
-    let response;
-    let successPath = '';
+    // Direct path to GitHub raw file
+    const githubUrl = 'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx';
     
-    // Try each path until one works
-    for (const path of possiblePaths) {
-      try {
-        response = await fetch(path);
-        if (response.ok) {
-          successPath = path;
-          break;
-        }
-      } catch (e) {
-        console.log(`Failed to fetch from ${path}`);
-      }
+    console.log(`Attempting to load data from: ${githubUrl}`);
+    const response = await fetch(githubUrl, { cache: 'no-store' });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from ${githubUrl} with status: ${response.status}`);
     }
     
-    if (!response || !response.ok) {
-      console.error(`Failed to fetch city data from all paths`);
-      return [];
-    }
-    
-    console.log(`Successfully loaded data from: ${successPath}`);
+    console.log('Successfully fetched data file, processing...');
     const arrayBuffer = await response.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
@@ -66,18 +50,38 @@ export const loadCityData = async (): Promise<City[]> => {
     return data;
   } catch (error) {
     console.error('Error loading city data:', error);
-    return [];
+    // Try local file as last resort
+    try {
+      console.log('Trying local file as fallback...');
+      const response = await fetch('/masterfile.xlsx');
+      
+      if (!response.ok) {
+        throw new Error('Local file fetch failed');
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json<City>(worksheet);
+      
+      console.log(`Successfully loaded ${data.length} cities from local file`);
+      return data;
+    } catch (localError) {
+      console.error('Error loading local city data:', localError);
+      return [];
+    }
   }
 };
 
-// Format thumbnail URL based on city and state with better error handling
+// Format thumbnail URL based on city and state
 export const getThumbnailUrl = (city: string, state: string): string => {
   try {
     // Replace spaces with underscores
     const formattedCity = city.replace(/ /g, '_');
     const formattedState = state.replace(/ /g, '_');
     
-    // Updated GitHub URL for thumbnails
+    // Direct GitHub URL for thumbnails
     return `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/thumbnails/${formattedCity}_${formattedState}.jpg`;
   } catch (error) {
     console.error('Error generating thumbnail URL:', error);

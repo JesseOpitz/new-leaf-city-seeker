@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import IdealCityForm from '@/components/IdealCityForm';
+import { loadCityData, calculateCityScores } from '@/utils/dataService';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -97,11 +99,42 @@ const Index = () => {
       
       // If we got a valid array of preferences
       if (Array.isArray(preferences) && preferences.length === 8) {
-        // Store preferences in localStorage to use in questionnaire
-        localStorage.setItem('aiPreferences', JSON.stringify(preferences));
-        
-        // Navigate to questionnaire with AI-generated preferences
-        navigate('/questionnaire?useAI=true');
+        // Generate results directly here instead of going to questionnaire
+        try {
+          const cityData = await loadCityData();
+          
+          if (!cityData || cityData.length === 0) {
+            throw new Error("Failed to load city data");
+          }
+          
+          // Default values for remaining preferences
+          const cityCount = 5;
+          const showBadMatches = false;
+          
+          // Create full preferences array including the AI-generated values and defaults
+          const fullPreferences: (number | boolean)[] = [...preferences, cityCount, showBadMatches];
+          
+          // Calculate city matches
+          const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
+          
+          // Store results in localStorage
+          localStorage.setItem('matchResults', JSON.stringify({
+            good_matches: goodMatches,
+            bad_matches: badMatches,
+            timestamp: new Date().toISOString(),
+            userPreferences: fullPreferences
+          }));
+          
+          // Navigate directly to results page
+          navigate('/results');
+        } catch (error) {
+          console.error("Error generating city matches:", error);
+          toast({
+            title: "Processing Error",
+            description: "There was a problem finding city matches. Please try the questionnaire instead.",
+            variant: "destructive",
+          });
+        }
       } else {
         throw new Error("Invalid response format from AI");
       }
