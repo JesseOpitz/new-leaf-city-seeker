@@ -6,11 +6,14 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import CityCard from '@/components/CityCard';
 import { MatchResults } from '@/utils/dataService';
+import MovingPlanOffer from '@/components/MovingPlanOffer';
 
 const Results = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState<MatchResults | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPlanOffer, setShowPlanOffer] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<{city: string, state: string} | null>(null);
   
   useEffect(() => {
     // Get results from localStorage
@@ -30,6 +33,11 @@ const Results = () => {
   
   const handleTryAgain = () => {
     navigate('/questionnaire');
+  };
+
+  const handleRequestPlan = (city: string, state: string) => {
+    setSelectedCity({ city, state });
+    setShowPlanOffer(true);
   };
   
   // If no results and done loading, redirect to questionnaire
@@ -86,6 +94,7 @@ const Results = () => {
                   wikipediaUrl={city.Wikipedia_URL}
                   thumbnailUrl={city.thumbnail_url}
                   isGoodMatch={true}
+                  onRequestPlan={() => handleRequestPlan(city.city, city.state)}
                 />
               ))}
             </div>
@@ -124,6 +133,14 @@ const Results = () => {
           </div>
         </div>
       </main>
+      
+      {showPlanOffer && selectedCity && (
+        <MovingPlanOffer 
+          city={selectedCity.city}
+          state={selectedCity.state}
+          onClose={() => setShowPlanOffer(false)}
+        />
+      )}
       
       <Footer />
     </div>

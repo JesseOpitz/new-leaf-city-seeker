@@ -15,6 +15,7 @@ export interface City {
   positive?: string;
   negative?: string;
   Wikipedia_URL?: string;
+  thumbnail_url?: string;
 }
 
 export interface MatchResults {

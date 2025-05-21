@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ExternalLink } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface CityCardProps {
   city: string;
@@ -10,6 +11,7 @@ interface CityCardProps {
   wikipediaUrl?: string;
   thumbnailUrl?: string;
   isGoodMatch?: boolean;
+  onRequestPlan?: () => void;
 }
 
 const CityCard = ({
@@ -18,7 +20,8 @@ const CityCard = ({
   description,
   wikipediaUrl,
   thumbnailUrl = 'https://via.placeholder.com/300x200?text=City+Image',
-  isGoodMatch = true
+  isGoodMatch = true,
+  onRequestPlan
 }: CityCardProps) => {
   return (
     <Card className="city-card">
@@ -41,18 +44,29 @@ const CityCard = ({
         <p className="text-gray-700">{description}</p>
       </CardContent>
       
-      {wikipediaUrl && (
-        <CardFooter className="border-t p-4">
-          <a 
-            href={wikipediaUrl} 
-            target="_blank"
-            rel="noopener noreferrer" 
-            className="text-leaf-dark hover:underline inline-flex items-center"
+      <CardFooter className="border-t p-4 flex flex-col space-y-2">
+        <div className="flex justify-between items-center w-full">
+          {wikipediaUrl && (
+            <a 
+              href={wikipediaUrl} 
+              target="_blank"
+              rel="noopener noreferrer" 
+              className="text-leaf-dark hover:underline inline-flex items-center"
+            >
+              Learn more <ExternalLink size={16} className="ml-1" />
+            </a>
+          )}
+        </div>
+        
+        {isGoodMatch && onRequestPlan && (
+          <Button 
+            onClick={onRequestPlan}
+            className="w-full mt-2 bg-leaf hover:bg-leaf-dark"
           >
-            Learn more <ExternalLink size={16} className="ml-1" />
-          </a>
-        </CardFooter>
-      )}
+            Get Moving Plan
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };

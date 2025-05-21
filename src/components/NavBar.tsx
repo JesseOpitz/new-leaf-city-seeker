@@ -21,7 +21,7 @@ const NavBar = () => {
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/leaf-logo.svg" 
+              src="/logo.png" 
               alt="New Leaf Logo" 
               className="h-10 w-10"
               onError={(e) => {
