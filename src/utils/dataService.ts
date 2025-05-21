@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -144,16 +143,10 @@ export const calculateCityScores = (
   scoredCities.sort((a, b) => b.score - a.score);
   
   // Get top and bottom cities based on cityCount
-  const goodMatches = scoredCities.slice(0, cityCount).map(city => ({
-    ...city,
-    thumbnail_url: getThumbnailUrl(city.city, city.state)
-  }));
+  const goodMatches = scoredCities.slice(0, cityCount);
   
   const badMatches = showBadMatches 
-    ? scoredCities.slice(-cityCount).map(city => ({
-        ...city,
-        thumbnail_url: getThumbnailUrl(city.city, city.state)
-      }))
+    ? scoredCities.slice(-cityCount)
     : [];
   
   return { 

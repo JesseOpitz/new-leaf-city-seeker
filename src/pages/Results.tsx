@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import CityCard from '@/components/CityCard';
-import { MatchResults } from '@/utils/dataService';
+import { MatchResults, getThumbnailUrl } from '@/utils/dataService';
 import MovingPlanOffer from '@/components/MovingPlanOffer';
 
 const Results = () => {
@@ -92,7 +92,7 @@ const Results = () => {
                   state={city.state}
                   description={city.positive || "A great match based on your preferences."}
                   wikipediaUrl={city.Wikipedia_URL}
-                  thumbnailUrl={city.thumbnail_url}
+                  thumbnailUrl={getThumbnailUrl(city.city, city.state)}
                   isGoodMatch={true}
                   onRequestPlan={() => handleRequestPlan(city.city, city.state)}
                 />
@@ -114,7 +114,7 @@ const Results = () => {
                     state={city.state}
                     description={city.negative || "This city may not align well with your preferences."}
                     wikipediaUrl={city.Wikipedia_URL}
-                    thumbnailUrl={city.thumbnail_url}
+                    thumbnailUrl={getThumbnailUrl(city.city, city.state)}
                     isGoodMatch={false}
                   />
                 ))}
