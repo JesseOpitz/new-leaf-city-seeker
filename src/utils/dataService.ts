@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -30,7 +31,7 @@ export const loadCityData = async (): Promise<City[]> => {
       '/masterfile.xlsx',
       './masterfile.xlsx',
       '../masterfile.xlsx',
-      'https://raw.githubusercontent.com/username/repo-name/main/public/masterfile.xlsx'
+      'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx'
     ];
     
     let response;
@@ -76,8 +77,8 @@ export const getThumbnailUrl = (city: string, state: string): string => {
     const formattedCity = city.replace(/ /g, '_');
     const formattedState = state.replace(/ /g, '_');
     
-    // First try GitHub URL, then fallback to relative path
-    return `https://raw.githubusercontent.com/username/repo-name/main/public/thumbnails/${formattedCity}_${formattedState}.jpg`;
+    // Updated GitHub URL for thumbnails
+    return `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/thumbnails/${formattedCity}_${formattedState}.jpg`;
   } catch (error) {
     console.error('Error generating thumbnail URL:', error);
     return 'https://via.placeholder.com/300x200?text=City+Image';

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +9,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <img 
-              src="https://raw.githubusercontent.com/username/repo-name/main/public/leaf-logo.svg" 
+              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/leaf-logo.svg" 
               alt="New Leaf Logo" 
               className="h-8 w-8 mr-2"
               onError={(e) => {

@@ -9,7 +9,7 @@ const NavBar = () => {
         <div className="flex justify-between items-center py-4">
           <Link to="/" className="flex items-center">
             <img 
-              src="https://raw.githubusercontent.com/username/repo-name/main/public/leaf-logo.svg" 
+              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/leaf-logo.svg" 
               alt="New Leaf Logo" 
               className="h-8 w-8 mr-2"
               onError={(e) => {
