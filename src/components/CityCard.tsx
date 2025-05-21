@@ -35,6 +35,7 @@ const CityCard = ({
           alt={`${city}, ${state}`} 
           className="w-full h-full object-cover"
           onError={(e) => {
+            console.error(`Failed to load thumbnail for ${city}, ${state}. URL was: ${thumbnailUrl}`);
             e.currentTarget.src = 'https://via.placeholder.com/300x200?text=City+Image';
           }}
         />

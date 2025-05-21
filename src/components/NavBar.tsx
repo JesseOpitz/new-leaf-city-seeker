@@ -20,7 +20,8 @@ const NavBar = () => {
               alt="New Leaf Logo" 
               className="h-8 w-8 mr-2"
               onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/32x32?text=NL';
+                console.error("Failed to load logo from GitHub, using fallback");
+                e.currentTarget.src = '/leaf-logo.svg';
               }}
             />
             <span className="text-xl font-medium text-leaf-dark">New Leaf</span>

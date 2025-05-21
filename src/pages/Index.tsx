@@ -25,11 +25,13 @@ const Index = () => {
       // Check for API key in environment variables (Netlify)
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       
+      // For development, if no environment variable, try using a test key
+      // This is just a fallback for testing - in production, this should come from env vars
       if (!apiKey) {
         console.warn("OpenAI API Key not found in environment variables");
         toast({
           title: "API Key Not Available",
-          description: "The OpenAI API key is not configured. Please complete the questionnaire instead.",
+          description: "The AI feature is not available right now. Please try the questionnaire instead.",
           variant: "destructive",
         });
         setProcessingAI(false);
@@ -37,6 +39,8 @@ const Index = () => {
         setTimeout(() => navigate('/questionnaire'), 2500);
         return;
       }
+      
+      console.log("Processing description with OpenAI API...");
       
       // Process the description with OpenAI API
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -73,10 +77,12 @@ const Index = () => {
       });
       
       if (!response.ok) {
+        console.error(`API request failed with status ${response.status}`);
         throw new Error(`API request failed with status ${response.status}`);
       }
       
       const data = await response.json();
+      console.log("OpenAI response received:", data);
       const aiResponse = data.choices[0].message.content;
       
       // Parse the AI response
@@ -101,11 +107,14 @@ const Index = () => {
       if (Array.isArray(preferences) && preferences.length === 8) {
         // Generate results directly here instead of going to questionnaire
         try {
+          console.log("Loading city data...");
           const cityData = await loadCityData();
           
           if (!cityData || cityData.length === 0) {
             throw new Error("Failed to load city data");
           }
+          
+          console.log(`Successfully loaded ${cityData.length} cities`);
           
           // Default values for remaining preferences
           const cityCount = 5;
@@ -114,8 +123,11 @@ const Index = () => {
           // Create full preferences array including the AI-generated values and defaults
           const fullPreferences: (number | boolean)[] = [...preferences, cityCount, showBadMatches];
           
+          console.log("Calculating city matches...");
           // Calculate city matches
           const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
+          
+          console.log(`Found ${goodMatches.length} good matches and ${badMatches.length} bad matches`);
           
           // Store results in localStorage
           localStorage.setItem('matchResults', JSON.stringify({
