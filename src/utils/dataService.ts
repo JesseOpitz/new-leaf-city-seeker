@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -27,22 +26,35 @@ export interface MatchResults {
 // Load and parse Excel file with more robust error handling for Netlify
 export const loadCityData = async (): Promise<City[]> => {
   try {
-    // Try to fetch from the root path first
-    let response = await fetch('/masterfile.xlsx');
+    const possiblePaths = [
+      '/masterfile.xlsx',
+      './masterfile.xlsx',
+      '../masterfile.xlsx',
+      'https://raw.githubusercontent.com/username/repo-name/main/public/masterfile.xlsx'
+    ];
     
-    // If that fails, try the public folder path
-    if (!response.ok) {
-      console.log('Failed to fetch from root path, trying public folder...');
-      response = await fetch('./masterfile.xlsx');
+    let response;
+    let successPath = '';
+    
+    // Try each path until one works
+    for (const path of possiblePaths) {
+      try {
+        response = await fetch(path);
+        if (response.ok) {
+          successPath = path;
+          break;
+        }
+      } catch (e) {
+        console.log(`Failed to fetch from ${path}`);
+      }
     }
     
-    if (!response.ok) {
-      console.error(`Failed to fetch city data: ${response.status} ${response.statusText}`);
-      
-      // Return empty array or fallback data if needed
+    if (!response || !response.ok) {
+      console.error(`Failed to fetch city data from all paths`);
       return [];
     }
     
+    console.log(`Successfully loaded data from: ${successPath}`);
     const arrayBuffer = await response.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
@@ -64,10 +76,11 @@ export const getThumbnailUrl = (city: string, state: string): string => {
     const formattedCity = city.replace(/ /g, '_');
     const formattedState = state.replace(/ /g, '_');
     
-    return `/thumbnails/${formattedCity}_${formattedState}.jpg`;
+    // First try GitHub URL, then fallback to relative path
+    return `https://raw.githubusercontent.com/username/repo-name/main/public/thumbnails/${formattedCity}_${formattedState}.jpg`;
   } catch (error) {
     console.error('Error generating thumbnail URL:', error);
-    return '/placeholder.svg';
+    return 'https://via.placeholder.com/300x200?text=City+Image';
   }
 };
 

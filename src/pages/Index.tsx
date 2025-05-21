@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -17,35 +16,106 @@ const Index = () => {
     navigate('/questionnaire');
   };
   
-  const handleAIDescription = (description: string) => {
+  const handleAIDescription = async (description: string) => {
     setProcessingAI(true);
     
-    // Check for API key in environment variables (Netlify)
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    
-    if (!apiKey) {
-      console.warn("API Key not found in environment variables");
+    try {
+      // Check for API key in environment variables (Netlify)
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      
+      if (!apiKey) {
+        console.warn("OpenAI API Key not found in environment variables");
+        toast({
+          title: "API Key Not Available",
+          description: "The OpenAI API key is not configured. Please complete the questionnaire instead.",
+          variant: "destructive",
+        });
+        setProcessingAI(false);
+        // Redirect to questionnaire after a short delay
+        setTimeout(() => navigate('/questionnaire'), 2500);
+        return;
+      }
+      
+      // Process the description with OpenAI API
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4-turbo",
+          messages: [
+            {
+              role: "system",
+              content: `You are a city matching assistant. Analyze the user's description of their ideal city and extract their preferences for the following categories on a scale of 0-8 (0 being not important at all, 8 being extremely important):
+              
+              1. Safety (importance of low crime rates)
+              2. Employment (importance of job opportunities)
+              3. Diversity (importance of cultural diversity)
+              4. Affordability (importance of reasonable housing costs)
+              5. Walkability (importance of pedestrian-friendly areas)
+              6. Remote Work Friendliness (importance of internet infrastructure)
+              7. Density (preference from 0=rural to 8=urban)
+              8. Politics (preference from 0=conservative to 8=liberal)
+              
+              Return ONLY a JSON array with exactly 8 numeric values corresponding to these categories. If the description doesn't provide enough information for any category, use a default value of 4 (neutral). If the entire description is insufficient to make reasonable estimates, return a string saying "insufficient_description" instead of the array.`
+            },
+            {
+              role: "user",
+              content: description
+            }
+          ],
+          temperature: 0.3,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const aiResponse = data.choices[0].message.content;
+      
+      // Parse the AI response
+      let preferences;
+      try {
+        preferences = JSON.parse(aiResponse);
+      } catch (e) {
+        // If not valid JSON, check if it's the insufficient_description message
+        if (aiResponse.includes("insufficient_description")) {
+          toast({
+            title: "Insufficient Description",
+            description: "Please provide more details about your preferences or use the questionnaire instead.",
+            variant: "destructive",
+          });
+          setProcessingAI(false);
+          return;
+        }
+        throw e;
+      }
+      
+      // If we got a valid array of preferences
+      if (Array.isArray(preferences) && preferences.length === 8) {
+        // Store preferences in localStorage to use in questionnaire
+        localStorage.setItem('aiPreferences', JSON.stringify(preferences));
+        
+        // Navigate to questionnaire with AI-generated preferences
+        navigate('/questionnaire?useAI=true');
+      } else {
+        throw new Error("Invalid response format from AI");
+      }
+      
+    } catch (error) {
+      console.error("Error processing AI description:", error);
       toast({
-        title: "API Key Not Available",
-        description: "The OpenAI API key is not configured. Please complete the questionnaire instead.",
+        title: "Processing Error",
+        description: "There was a problem analyzing your description. Please try the questionnaire instead.",
         variant: "destructive",
       });
+    } finally {
       setProcessingAI(false);
-      // Redirect to questionnaire after a short delay
-      setTimeout(() => navigate('/questionnaire'), 2500);
-      return;
     }
-    
-    // Process the description and navigate to questionnaire
-    // In a real implementation, this would be a fetch to process the description
-    setTimeout(() => {
-      setProcessingAI(false);
-      toast({
-        title: "Description Processed",
-        description: "Your preferences have been analyzed.",
-      });
-      navigate('/questionnaire');
-    }, 2000);
   };
   
   return (

@@ -35,7 +35,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
         Feel free to select "Prefer not to say" for any question.
       </p>
 
-      <ScrollArea className="h-[400px] pr-4">
+      <ScrollArea className="h-[400px] pr-4 overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Timeline Question */}

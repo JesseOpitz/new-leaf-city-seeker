@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -66,6 +66,7 @@ const questionSteps = [
 
 const Questionnaire = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<number[]>(Array(8).fill(4)); // Initialize with middle values
@@ -74,6 +75,28 @@ const Questionnaire = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [cityData, setCityData] = useState<any[]>([]);
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
+
+  // Check if we should use AI-generated preferences
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const useAI = searchParams.get('useAI') === 'true';
+    
+    if (useAI) {
+      const aiPreferences = localStorage.getItem('aiPreferences');
+      if (aiPreferences) {
+        try {
+          const preferences = JSON.parse(aiPreferences);
+          setAnswers(preferences);
+          toast({
+            title: "AI Preferences Applied",
+            description: "We've pre-filled the questionnaire based on your description.",
+          });
+        } catch (error) {
+          console.error("Error parsing AI preferences:", error);
+        }
+      }
+    }
+  }, [location.search, toast]);
 
   // Load city data when component mounts
   useEffect(() => {
