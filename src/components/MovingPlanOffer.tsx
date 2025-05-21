@@ -93,7 +93,7 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
                 onClick={handleStartQuestionnaire} 
                 className="bg-leaf hover:bg-leaf-dark"
               >
-                Take Personalization Questionnaire
+                Personalize My Plan
               </Button>
             </div>
 

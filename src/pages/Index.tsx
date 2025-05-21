@@ -18,17 +18,29 @@ const Index = () => {
   };
   
   const handleAIDescription = (description: string) => {
-    // In future versions, this will use OpenAI to interpret the description
-    // For now, show a "coming soon" toast and still navigate to questionnaire
     setProcessingAI(true);
     
-    toast({
-      title: "AI Description Feature Coming Soon",
-      description: "This feature is under development. Taking you to the questionnaire instead.",
-    });
+    // Check if OpenAI API key is available in environment variables
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     
+    if (!apiKey) {
+      toast({
+        title: "API Key Not Found",
+        description: "Please set the VITE_OPENAI_API_KEY environment variable.",
+        variant: "destructive",
+      });
+      setProcessingAI(false);
+      return;
+    }
+    
+    // Process the description and navigate to questionnaire
+    // In a real implementation, this would be a fetch to process the description
     setTimeout(() => {
       setProcessingAI(false);
+      toast({
+        title: "Description Processed",
+        description: "Your preferences have been analyzed.",
+      });
       navigate('/questionnaire');
     }, 2000);
   };

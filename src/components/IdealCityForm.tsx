@@ -42,7 +42,7 @@ const IdealCityForm = ({ onSubmit }: IdealCityFormProps) => {
           value={description}
           onChange={(e) => setDescription(e.target.value.slice(0, MAX_CHARS))}
         />
-        <div className={`character-counter ${isNearLimit ? 'limit-near' : ''} ${isAtLimit ? 'limit-reached' : ''}`}>
+        <div className={`text-sm text-gray-500 mt-1 ${isNearLimit ? 'text-amber-600' : ''} ${isAtLimit ? 'text-red-600' : ''}`}>
           {charsRemaining} characters remaining
         </div>
       </div>
