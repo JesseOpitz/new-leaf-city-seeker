@@ -15,7 +15,6 @@ export interface City {
   positive?: string;
   negative?: string;
   Wikipedia_URL?: string;
-  thumbnail_url?: string;
 }
 
 export interface MatchResults {
@@ -25,12 +24,10 @@ export interface MatchResults {
   userPreferences: (number | boolean)[];
 }
 
-// Load and parse Excel file
+// Load and parse Excel file from local project instead of GitHub
 export const loadCityData = async (): Promise<City[]> => {
   try {
-    const response = await fetch('https://raw.githubusercontent.com/lovable-scenes/new-leaf/main/masterfile.xlsx', { 
-      cache: 'no-store' 
-    });
+    const response = await fetch('/masterfile.xlsx');
     
     if (!response.ok) {
       throw new Error('Failed to fetch city data');
@@ -55,7 +52,7 @@ export const getThumbnailUrl = (city: string, state: string): string => {
   const formattedCity = city.replace(/ /g, '_');
   const formattedState = state.replace(/ /g, '_');
   
-  return `https://raw.githubusercontent.com/lovable-scenes/new-leaf/main/thumbnails/${formattedCity}_${formattedState}.jpg`;
+  return `/thumbnails/${formattedCity}_${formattedState}.jpg`;
 };
 
 // Calculate city scores based on user preferences
