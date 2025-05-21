@@ -33,7 +33,13 @@ export const loadCityData = async (): Promise<City[]> => {
     const githubUrl = 'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx';
     
     console.log(`Attempting to load data from: ${githubUrl}`);
-    const response = await fetch(githubUrl, { cache: 'no-store' });
+    const response = await fetch(githubUrl, { 
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch from ${githubUrl} with status: ${response.status}`);
@@ -53,7 +59,13 @@ export const loadCityData = async (): Promise<City[]> => {
     // Try local file as last resort
     try {
       console.log('Trying local file as fallback...');
-      const response = await fetch('/masterfile.xlsx');
+      const response = await fetch('/masterfile.xlsx', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Local file fetch failed');

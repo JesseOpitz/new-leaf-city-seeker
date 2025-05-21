@@ -22,11 +22,11 @@ const Index = () => {
     setProcessingAI(true);
     
     try {
+      console.log("Starting AI description processing...");
+      
       // Check for API key in environment variables (Netlify)
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       
-      // For development, if no environment variable, try using a test key
-      // This is just a fallback for testing - in production, this should come from env vars
       if (!apiKey) {
         console.warn("OpenAI API Key not found in environment variables");
         toast({
