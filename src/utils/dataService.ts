@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -23,13 +24,23 @@ export interface MatchResults {
   userPreferences: (number | boolean)[];
 }
 
-// Load and parse Excel file from local project instead of GitHub
+// Load and parse Excel file with more robust error handling for Netlify
 export const loadCityData = async (): Promise<City[]> => {
   try {
-    const response = await fetch('/masterfile.xlsx');
+    // Try to fetch from the root path first
+    let response = await fetch('/masterfile.xlsx');
+    
+    // If that fails, try the public folder path
+    if (!response.ok) {
+      console.log('Failed to fetch from root path, trying public folder...');
+      response = await fetch('./masterfile.xlsx');
+    }
     
     if (!response.ok) {
-      throw new Error('Failed to fetch city data');
+      console.error(`Failed to fetch city data: ${response.status} ${response.statusText}`);
+      
+      // Return empty array or fallback data if needed
+      return [];
     }
     
     const arrayBuffer = await response.arrayBuffer();
@@ -38,6 +49,7 @@ export const loadCityData = async (): Promise<City[]> => {
     const worksheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json<City>(worksheet);
     
+    console.log(`Successfully loaded ${data.length} cities`);
     return data;
   } catch (error) {
     console.error('Error loading city data:', error);
@@ -45,13 +57,18 @@ export const loadCityData = async (): Promise<City[]> => {
   }
 };
 
-// Format thumbnail URL based on city and state
+// Format thumbnail URL based on city and state with better error handling
 export const getThumbnailUrl = (city: string, state: string): string => {
-  // Replace spaces with underscores
-  const formattedCity = city.replace(/ /g, '_');
-  const formattedState = state.replace(/ /g, '_');
-  
-  return `/thumbnails/${formattedCity}_${formattedState}.jpg`;
+  try {
+    // Replace spaces with underscores
+    const formattedCity = city.replace(/ /g, '_');
+    const formattedState = state.replace(/ /g, '_');
+    
+    return `/thumbnails/${formattedCity}_${formattedState}.jpg`;
+  } catch (error) {
+    console.error('Error generating thumbnail URL:', error);
+    return '/placeholder.svg';
+  }
 };
 
 // Calculate city scores based on user preferences

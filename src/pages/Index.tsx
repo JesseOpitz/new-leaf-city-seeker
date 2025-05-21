@@ -20,16 +20,19 @@ const Index = () => {
   const handleAIDescription = (description: string) => {
     setProcessingAI(true);
     
-    // Check if OpenAI API key is available in environment variables
+    // Check for API key in environment variables (Netlify)
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     
     if (!apiKey) {
+      console.warn("API Key not found in environment variables");
       toast({
-        title: "API Key Not Found",
-        description: "Please set the VITE_OPENAI_API_KEY environment variable.",
+        title: "API Key Not Available",
+        description: "The OpenAI API key is not configured. Please complete the questionnaire instead.",
         variant: "destructive",
       });
       setProcessingAI(false);
+      // Redirect to questionnaire after a short delay
+      setTimeout(() => navigate('/questionnaire'), 2500);
       return;
     }
     

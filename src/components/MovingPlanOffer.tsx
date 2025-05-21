@@ -46,14 +46,14 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="bg-leaf-dark p-4 text-white">
           <h2 className="text-xl font-semibold">Personalized Moving Plan</h2>
           <p>For {city}, {state}</p>
         </div>
         
         {step === 'intro' && (
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto">
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">What You'll Get:</h3>
               <ul className="space-y-2">
@@ -93,7 +93,7 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
                 onClick={handleStartQuestionnaire} 
                 className="bg-leaf hover:bg-leaf-dark"
               >
-                Personalize My Plan
+                Personalize Plan
               </Button>
             </div>
 
@@ -104,23 +104,27 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
         )}
         
         {step === 'questionnaire' && (
-          <MovingPlanQuestionnaire 
-            onComplete={handleQuestionnaireComplete}
-            onCancel={onClose}
-          />
+          <div className="overflow-y-auto flex-1">
+            <MovingPlanQuestionnaire 
+              onComplete={handleQuestionnaireComplete}
+              onCancel={onClose}
+            />
+          </div>
         )}
 
         {step === 'details' && (
-          <MovingPlanDetails
-            city={city}
-            state={state}
-            questionnaireData={questionnaireData}
-            onSubmit={handleSubmit}
-            email={email}
-            setEmail={setEmail}
-            isProcessing={isProcessing}
-            onCancel={onClose}
-          />
+          <div className="overflow-y-auto flex-1">
+            <MovingPlanDetails
+              city={city}
+              state={state}
+              questionnaireData={questionnaireData}
+              onSubmit={handleSubmit}
+              email={email}
+              setEmail={setEmail}
+              isProcessing={isProcessing}
+              onCancel={onClose}
+            />
+          </div>
         )}
       </div>
     </div>
