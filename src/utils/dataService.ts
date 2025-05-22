@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -29,15 +28,19 @@ export const loadCityData = async (): Promise<City[]> => {
   try {
     console.log('Starting to load city data...');
     
+    // Add a cache-busting parameter to prevent browser caching
+    const timestamp = new Date().getTime();
+    
     // Direct path to GitHub raw file
-    const githubUrl = 'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx';
+    const githubUrl = `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx?t=${timestamp}`;
     
     console.log(`Attempting to load data from: ${githubUrl}`);
     const response = await fetch(githubUrl, { 
       cache: 'no-store',
       headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     });
     
@@ -59,11 +62,13 @@ export const loadCityData = async (): Promise<City[]> => {
     // Try local file as last resort
     try {
       console.log('Trying local file as fallback...');
-      const response = await fetch('/masterfile.xlsx', {
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/masterfile.xlsx?t=${timestamp}`, {
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       });
       

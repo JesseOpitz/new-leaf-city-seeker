@@ -16,12 +16,15 @@ const NavBar = () => {
         <div className="flex justify-between items-center py-4">
           <Link to="/" className="flex items-center">
             <img 
-              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/leaf-logo.svg" 
+              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/logo.png" 
               alt="New Leaf Logo" 
-              className="h-8 w-8 mr-2"
+              className="h-8 w-auto mr-2"
               onError={(e) => {
                 console.error("Failed to load logo from GitHub, using fallback");
-                e.currentTarget.src = '/leaf-logo.svg';
+                const fallbackUrl = '/logo.png';
+                if (e.currentTarget.src !== fallbackUrl) {
+                  e.currentTarget.src = fallbackUrl;
+                }
               }}
             />
             <span className="text-xl font-medium text-leaf-dark">New Leaf</span>

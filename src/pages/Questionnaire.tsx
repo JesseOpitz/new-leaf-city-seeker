@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -75,6 +74,7 @@ const Questionnaire = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [cityData, setCityData] = useState<any[]>([]);
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
+  const [loadingAttempts, setLoadingAttempts] = useState<number>(0);
 
   // Check if we should use AI-generated preferences
   useEffect(() => {
@@ -101,13 +101,37 @@ const Questionnaire = () => {
   // Load city data when component mounts
   useEffect(() => {
     const fetchCityData = async () => {
-      const data = await loadCityData();
-      setCityData(data);
-      setDataLoaded(true);
+      try {
+        console.log(`Attempt ${loadingAttempts + 1} to load city data...`);
+        const data = await loadCityData();
+        
+        if (data && data.length > 0) {
+          console.log(`Successfully loaded ${data.length} cities on attempt ${loadingAttempts + 1}`);
+          setCityData(data);
+          setDataLoaded(true);
+        } else {
+          throw new Error("No city data returned");
+        }
+      } catch (error) {
+        console.error(`Error loading data (attempt ${loadingAttempts + 1}):`, error);
+        
+        if (loadingAttempts < 3) {
+          // Retry after a delay
+          setTimeout(() => {
+            setLoadingAttempts(prev => prev + 1);
+          }, 1500);
+        } else {
+          toast({
+            title: "Data Loading Issue",
+            description: "We're having trouble loading city data. Please try refreshing the page.",
+            variant: "destructive",
+          });
+        }
+      }
     };
     
     fetchCityData();
-  }, []);
+  }, [loadingAttempts, toast]);
 
   // Progress calculation
   const totalSteps = questionSteps.length + 1; // +1 for the final options step
@@ -137,21 +161,46 @@ const Questionnaire = () => {
     setIsSubmitting(true);
     
     if (!dataLoaded || cityData.length === 0) {
-      toast({
-        title: "Error",
-        description: "City data has not been loaded yet. Please try again.",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
+      // Try one more time to load data
+      try {
+        console.log("Final attempt to load data before submission...");
+        const freshData = await loadCityData();
+        
+        if (!freshData || freshData.length === 0) {
+          throw new Error("Still no city data available");
+        }
+        
+        setCityData(freshData);
+        
+        // Continue with submission using this fresh data
+        processSubmission(freshData);
+      } catch (error) {
+        console.error("Error on final data loading attempt:", error);
+        toast({
+          title: "Data Not Available",
+          description: "City data could not be loaded. Please try again later.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+      }
+    } else {
+      // Use already loaded data
+      processSubmission(cityData);
     }
-    
+  };
+  
+  // Helper function to process submission once we have data
+  const processSubmission = (data: any[]) => {
     try {
+      console.log(`Processing submission with ${data.length} cities`);
+      
       // Create full preferences array (answers + cityCount + showBadMatches)
       const fullPreferences: (number | boolean)[] = [...answers, cityCount, showBadMatches];
       
       // Calculate city matches using our utility function
-      const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
+      const { goodMatches, badMatches } = calculateCityScores(data, fullPreferences);
+      
+      console.log(`Found ${goodMatches.length} good matches and ${badMatches.length} bad matches`);
       
       // Store results in localStorage
       localStorage.setItem('matchResults', JSON.stringify({
@@ -168,8 +217,8 @@ const Questionnaire = () => {
       console.error("Error processing questionnaire:", error);
       setIsSubmitting(false);
       toast({
-        title: "Error",
-        description: "There was a problem processing your questionnaire. Please try again.",
+        title: "Processing Error",
+        description: "There was a problem with your submission. Please try again.",
         variant: "destructive",
       });
     }
@@ -279,7 +328,7 @@ const Questionnaire = () => {
               {isLastStep && (
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={isSubmitting || !dataLoaded}
+                  disabled={isSubmitting}
                   className="leaf-bg-gradient hover:opacity-90"
                 >
                   {isSubmitting ? (

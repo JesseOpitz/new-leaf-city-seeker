@@ -146,6 +146,7 @@ const Index = () => {
             description: "There was a problem finding city matches. Please try the questionnaire instead.",
             variant: "destructive",
           });
+          setProcessingAI(false);
         }
       } else {
         throw new Error("Invalid response format from AI");
@@ -158,7 +159,6 @@ const Index = () => {
         description: "There was a problem analyzing your description. Please try the questionnaire instead.",
         variant: "destructive",
       });
-    } finally {
       setProcessingAI(false);
     }
   };
