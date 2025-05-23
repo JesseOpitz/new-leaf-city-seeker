@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -111,14 +110,6 @@ const Questionnaire = () => {
           console.log(`Successfully loaded ${data.length} cities on attempt ${loadingAttempts + 1}`);
           setCityData(data);
           setDataLoaded(true);
-          
-          if (isInitialLoad) {
-            toast({
-              title: "Data loaded successfully",
-              description: `${data.length} cities are now available for matching.`,
-            });
-            setIsInitialLoad(false);
-          }
         } else {
           throw new Error("No city data returned or empty array");
         }

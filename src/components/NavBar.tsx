@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -22,13 +21,13 @@ const NavBar = () => {
                 alt="New Leaf Logo" 
                 className="h-8 w-auto mr-2"
                 onError={(e) => {
-                  console.log("Logo failed to load, trying public URL");
+                  console.log("Logo failed to load, trying GitHub URL");
                   setLogoError(true);
                 }}
               />
             ) : (
               <img 
-                src={`${window.location.origin}/logo.png`}
+                src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/logo.png"
                 alt="New Leaf Logo" 
                 className="h-8 w-auto mr-2"
                 onError={(e) => {

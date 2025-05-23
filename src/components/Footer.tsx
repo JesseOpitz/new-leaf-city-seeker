@@ -1,21 +1,36 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  const [logoError, setLogoError] = useState(false);
+  
   return (
     <footer className="mt-auto py-6 bg-muted">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <img 
-              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/leaf-logo.svg" 
-              alt="New Leaf Logo" 
-              className="h-8 w-8 mr-2"
-              onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/32x32?text=NL';
-              }}
-            />
+            {!logoError ? (
+              <img 
+                src="/logo.png" 
+                alt="New Leaf Logo" 
+                className="h-8 w-8 mr-2"
+                onError={(e) => {
+                  console.log("Footer logo failed to load, trying GitHub URL");
+                  setLogoError(true);
+                }}
+              />
+            ) : (
+              <img 
+                src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/logo.png" 
+                alt="New Leaf Logo" 
+                className="h-8 w-8 mr-2"
+                onError={(e) => {
+                  console.error("Both footer logo loading attempts failed");
+                  e.currentTarget.src = 'https://via.placeholder.com/32x32?text=NL';
+                }}
+              />
+            )}
             <span className="text-leaf-dark font-medium">New Leaf</span>
           </div>
           
