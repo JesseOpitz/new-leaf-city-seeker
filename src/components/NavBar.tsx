@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [logoError, setLogoError] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -15,26 +15,15 @@ const NavBar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link to="/" className="flex items-center">
-            {!logoError ? (
-              <img 
-                src="/logo.png" 
-                alt="New Leaf Logo" 
-                className="h-8 w-auto mr-2"
-                onError={(e) => {
-                  console.log("Logo failed to load, trying GitHub URL");
-                  setLogoError(true);
-                }}
-              />
-            ) : (
-              <img 
-                src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/logo.png"
-                alt="New Leaf Logo" 
-                className="h-8 w-auto mr-2"
-                onError={(e) => {
-                  console.error("Both logo loading attempts failed");
-                }}
-              />
-            )}
+            <img 
+              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/logo.png"
+              alt="New Leaf Logo" 
+              className="h-8 w-auto mr-2"
+              onError={(e) => {
+                console.error("Logo loading failed");
+                e.currentTarget.src = 'https://via.placeholder.com/32x32?text=NL';
+              }}
+            />
             <span className="text-xl font-medium text-leaf-dark">New Leaf</span>
           </Link>
           
