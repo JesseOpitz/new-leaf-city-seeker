@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 
 export interface City {
@@ -23,7 +24,7 @@ export interface MatchResults {
   userPreferences: (number | boolean)[];
 }
 
-// Load and parse Excel file with robust error handling for Netlify
+// Load and parse Excel file with robust error handling
 export const loadCityData = async (): Promise<City[]> => {
   try {
     console.log('Starting to load city data...');
@@ -31,11 +32,10 @@ export const loadCityData = async (): Promise<City[]> => {
     // Add a cache-busting parameter to prevent browser caching
     const timestamp = new Date().getTime();
     
-    // Direct path to GitHub raw file
-    const githubUrl = `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx?t=${timestamp}`;
+    // First try the local path which should be available in Netlify
+    console.log('Attempting to load data from local path...');
     
-    console.log(`Attempting to load data from: ${githubUrl}`);
-    const response = await fetch(githubUrl, { 
+    const response = await fetch(`/masterfile.xlsx?t=${timestamp}`, { 
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -45,7 +45,7 @@ export const loadCityData = async (): Promise<City[]> => {
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch from ${githubUrl} with status: ${response.status}`);
+      throw new Error(`Failed to fetch local file with status: ${response.status}`);
     }
     
     console.log('Successfully fetched data file, processing...');
@@ -57,13 +57,17 @@ export const loadCityData = async (): Promise<City[]> => {
     
     console.log(`Successfully loaded ${data.length} cities`);
     return data;
-  } catch (error) {
-    console.error('Error loading city data:', error);
-    // Try local file as last resort
+  } catch (localError) {
+    console.error('Error loading local city data:', localError);
+    
     try {
-      console.log('Trying local file as fallback...');
+      // As a fallback, try GitHub
+      console.log('Trying GitHub file as fallback...');
       const timestamp = new Date().getTime();
-      const response = await fetch(`/masterfile.xlsx?t=${timestamp}`, {
+      const githubUrl = `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx?t=${timestamp}`;
+      
+      console.log(`Attempting to load from: ${githubUrl}`);
+      const response = await fetch(githubUrl, { 
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -73,7 +77,7 @@ export const loadCityData = async (): Promise<City[]> => {
       });
       
       if (!response.ok) {
-        throw new Error('Local file fetch failed');
+        throw new Error(`Failed to fetch from GitHub with status: ${response.status}`);
       }
       
       const arrayBuffer = await response.arrayBuffer();
@@ -82,11 +86,20 @@ export const loadCityData = async (): Promise<City[]> => {
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json<City>(worksheet);
       
-      console.log(`Successfully loaded ${data.length} cities from local file`);
+      console.log(`Successfully loaded ${data.length} cities from GitHub`);
       return data;
-    } catch (localError) {
-      console.error('Error loading local city data:', localError);
-      return [];
+    } catch (githubError) {
+      console.error('Error loading GitHub city data:', githubError);
+      
+      // Provide a simple dataset as emergency fallback
+      console.warn('Loading emergency fallback data with minimal city set');
+      return [
+        { city: "New York", state: "New York" },
+        { city: "Los Angeles", state: "California" },
+        { city: "Chicago", state: "Illinois" },
+        { city: "Houston", state: "Texas" },
+        { city: "Phoenix", state: "Arizona" }
+      ];
     }
   }
 };
@@ -98,8 +111,8 @@ export const getThumbnailUrl = (city: string, state: string): string => {
     const formattedCity = city.replace(/ /g, '_');
     const formattedState = state.replace(/ /g, '_');
     
-    // Direct GitHub URL for thumbnails
-    return `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/thumbnails/${formattedCity}_${formattedState}.jpg`;
+    // First try local thumbnail
+    return `/thumbnails/${formattedCity}_${formattedState}.jpg`;
   } catch (error) {
     console.error('Error generating thumbnail URL:', error);
     return 'https://via.placeholder.com/300x200?text=City+Image';

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ const Questionnaire = () => {
   const [cityData, setCityData] = useState<any[]>([]);
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
   const [loadingAttempts, setLoadingAttempts] = useState<number>(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Check if we should use AI-generated preferences
   useEffect(() => {
@@ -109,17 +111,28 @@ const Questionnaire = () => {
           console.log(`Successfully loaded ${data.length} cities on attempt ${loadingAttempts + 1}`);
           setCityData(data);
           setDataLoaded(true);
+          
+          if (isInitialLoad) {
+            toast({
+              title: "Data loaded successfully",
+              description: `${data.length} cities are now available for matching.`,
+            });
+            setIsInitialLoad(false);
+          }
         } else {
-          throw new Error("No city data returned");
+          throw new Error("No city data returned or empty array");
         }
       } catch (error) {
         console.error(`Error loading data (attempt ${loadingAttempts + 1}):`, error);
         
         if (loadingAttempts < 3) {
-          // Retry after a delay
+          // Retry with exponential backoff
+          const delay = Math.pow(2, loadingAttempts) * 1000;
+          console.log(`Retrying in ${delay/1000} seconds...`);
+          
           setTimeout(() => {
             setLoadingAttempts(prev => prev + 1);
-          }, 1500);
+          }, delay);
         } else {
           toast({
             title: "Data Loading Issue",
@@ -131,7 +144,7 @@ const Questionnaire = () => {
     };
     
     fetchCityData();
-  }, [loadingAttempts, toast]);
+  }, [loadingAttempts, toast, isInitialLoad]);
 
   // Progress calculation
   const totalSteps = questionSteps.length + 1; // +1 for the final options step
@@ -171,6 +184,7 @@ const Questionnaire = () => {
         }
         
         setCityData(freshData);
+        setDataLoaded(true);
         
         // Continue with submission using this fresh data
         processSubmission(freshData);
@@ -178,7 +192,7 @@ const Questionnaire = () => {
         console.error("Error on final data loading attempt:", error);
         toast({
           title: "Data Not Available",
-          description: "City data could not be loaded. Please try again later.",
+          description: "City data could not be loaded. Please try again later or check your internet connection.",
           variant: "destructive",
         });
         setIsSubmitting(false);
@@ -197,18 +211,23 @@ const Questionnaire = () => {
       // Create full preferences array (answers + cityCount + showBadMatches)
       const fullPreferences: (number | boolean)[] = [...answers, cityCount, showBadMatches];
       
+      console.log("Full preferences:", fullPreferences);
+      
       // Calculate city matches using our utility function
       const { goodMatches, badMatches } = calculateCityScores(data, fullPreferences);
       
       console.log(`Found ${goodMatches.length} good matches and ${badMatches.length} bad matches`);
       
       // Store results in localStorage
-      localStorage.setItem('matchResults', JSON.stringify({
+      const resultsData = {
         good_matches: goodMatches,
         bad_matches: badMatches,
         timestamp: new Date().toISOString(),
         userPreferences: fullPreferences
-      }));
+      };
+      
+      console.log("Saving results to localStorage:", resultsData);
+      localStorage.setItem('matchResults', JSON.stringify(resultsData));
       
       setIsSubmitting(false);
       navigate('/results');
@@ -218,7 +237,7 @@ const Questionnaire = () => {
       setIsSubmitting(false);
       toast({
         title: "Processing Error",
-        description: "There was a problem with your submission. Please try again.",
+        description: "There was a problem processing your preferences. Please try again.",
         variant: "destructive",
       });
     }
@@ -306,6 +325,12 @@ const Questionnaire = () => {
                       onCheckedChange={setShowBadMatches} 
                     />
                   </div>
+
+                  {!dataLoaded && (
+                    <div className="text-amber-600 text-sm mt-4 p-2 bg-amber-50 border border-amber-200 rounded">
+                      Note: City data is still loading. You can continue, but there may be a slight delay.
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

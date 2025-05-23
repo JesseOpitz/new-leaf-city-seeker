@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -15,18 +16,26 @@ const NavBar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link to="/" className="flex items-center">
-            <img 
-              src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/logo.png" 
-              alt="New Leaf Logo" 
-              className="h-8 w-auto mr-2"
-              onError={(e) => {
-                console.error("Failed to load logo from GitHub, using fallback");
-                const fallbackUrl = '/logo.png';
-                if (e.currentTarget.src !== fallbackUrl) {
-                  e.currentTarget.src = fallbackUrl;
-                }
-              }}
-            />
+            {!logoError ? (
+              <img 
+                src="/logo.png" 
+                alt="New Leaf Logo" 
+                className="h-8 w-auto mr-2"
+                onError={(e) => {
+                  console.log("Logo failed to load, trying public URL");
+                  setLogoError(true);
+                }}
+              />
+            ) : (
+              <img 
+                src={`${window.location.origin}/logo.png`}
+                alt="New Leaf Logo" 
+                className="h-8 w-auto mr-2"
+                onError={(e) => {
+                  console.error("Both logo loading attempts failed");
+                }}
+              />
+            )}
             <span className="text-xl font-medium text-leaf-dark">New Leaf</span>
           </Link>
           
