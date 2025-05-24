@@ -111,8 +111,8 @@ export const getThumbnailUrl = (city: string, state: string): string => {
     const formattedCity = city.replace(/ /g, '_');
     const formattedState = state.replace(/ /g, '_');
     
-    // First try local thumbnail
-    return `/thumbnails/${formattedCity}_${formattedState}.jpg`;
+    // Use GitHub repository thumbnails directory
+    return `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/thumbnails/${formattedCity}_${formattedState}.jpg`;
   } catch (error) {
     console.error('Error generating thumbnail URL:', error);
     return 'https://via.placeholder.com/300x200?text=City+Image';
