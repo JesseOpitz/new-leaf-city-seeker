@@ -1,16 +1,25 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import IdealCityForm from '@/components/IdealCityForm';
+import { loadCityData, calculateCityScores } from '@/utils/dataService';
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [processingAI, setProcessingAI] = useState(false);
+  const [showAIOptions, setShowAIOptions] = useState(false);
+  const [aiPreferences, setAiPreferences] = useState<number[]>([]);
+  const [cityCount, setCityCount] = useState<number>(5);
+  const [showBadMatches, setShowBadMatches] = useState<boolean>(false);
   
   const handleGetStarted = () => {
     navigate('/questionnaire');
@@ -103,12 +112,10 @@ const Index = () => {
       
       // If we got a valid array of preferences
       if (Array.isArray(preferences) && preferences.length === 8) {
-        // Store the AI-generated preferences in localStorage
-        localStorage.setItem('aiPreferences', JSON.stringify(preferences));
-        
-        // Navigate to questionnaire with a flag to use AI preferences
+        // Store the AI-generated preferences
+        setAiPreferences(preferences);
         setProcessingAI(false);
-        navigate('/questionnaire?useAI=true');
+        setShowAIOptions(true);
       } else {
         throw new Error("Invalid response format from AI");
       }
@@ -121,6 +128,52 @@ const Index = () => {
         variant: "destructive",
       });
       setProcessingAI(false);
+    }
+  };
+
+  const handleAISubmit = async () => {
+    setProcessingAI(true);
+    
+    try {
+      console.log("Loading city data for AI submission...");
+      const cityData = await loadCityData();
+      
+      if (!cityData || cityData.length === 0) {
+        throw new Error("No city data available");
+      }
+      
+      // Create full preferences array (AI preferences + cityCount + showBadMatches)
+      const fullPreferences: (number | boolean)[] = [...aiPreferences, cityCount, showBadMatches];
+      
+      console.log("Full AI preferences:", fullPreferences);
+      
+      // Calculate city matches using our utility function
+      const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
+      
+      console.log(`Found ${goodMatches.length} good matches and ${badMatches.length} bad matches`);
+      
+      // Store results in localStorage
+      const resultsData = {
+        good_matches: goodMatches,
+        bad_matches: badMatches,
+        timestamp: new Date().toISOString(),
+        userPreferences: fullPreferences
+      };
+      
+      console.log("Saving AI results to localStorage:", resultsData);
+      localStorage.setItem('matchResults', JSON.stringify(resultsData));
+      
+      setProcessingAI(false);
+      navigate('/results');
+      
+    } catch (error) {
+      console.error("Error processing AI submission:", error);
+      setProcessingAI(false);
+      toast({
+        title: "Processing Error",
+        description: "There was a problem finding your city matches. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -174,12 +227,74 @@ const Index = () => {
                 Tell us in your own words what you're looking for in a city, and our AI will interpret your preferences.
               </p>
               
-              <IdealCityForm onSubmit={handleAIDescription} />
-              
-              {processingAI && (
-                <div className="mt-4 text-center text-gray-600">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-leaf mr-2"></div>
-                  Processing your description...
+              {!showAIOptions && (
+                <>
+                  <IdealCityForm onSubmit={handleAIDescription} />
+                  
+                  {processingAI && (
+                    <div className="mt-4 text-center text-gray-600">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-leaf mr-2"></div>
+                      Processing your description...
+                    </div>
+                  )}
+                </>
+              )}
+
+              {showAIOptions && (
+                <div className="space-y-6 pt-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium">How many city recommendations would you like?</h3>
+                    <RadioGroup value={cityCount.toString()} onValueChange={(value) => setCityCount(Number(value))}>
+                      <div className="flex gap-6 justify-center pt-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="3" id="ai-r1" />
+                          <Label htmlFor="ai-r1">3 cities</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="5" id="ai-r2" />
+                          <Label htmlFor="ai-r2">5 cities</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="10" id="ai-r3" />
+                          <Label htmlFor="ai-r3">10 cities</Label>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-4">
+                    <div>
+                      <h3 className="text-lg font-medium">Also show cities to avoid?</h3>
+                      <p className="text-sm text-muted-foreground">See which cities might not match your preferences</p>
+                    </div>
+                    <Switch 
+                      checked={showBadMatches} 
+                      onCheckedChange={setShowBadMatches} 
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowAIOptions(false)}
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      onClick={handleAISubmit} 
+                      disabled={processingAI}
+                      className="leaf-bg-gradient hover:opacity-90"
+                    >
+                      {processingAI ? (
+                        <>
+                          <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                          Finding cities...
+                        </>
+                      ) : (
+                        "Find My Cities"
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
