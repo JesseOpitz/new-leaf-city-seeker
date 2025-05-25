@@ -22,6 +22,7 @@ const Results = () => {
     if (storedResults) {
       try {
         const parsedResults = JSON.parse(storedResults);
+        console.log('Loaded results from localStorage:', parsedResults);
         setResults(parsedResults);
       } catch (error) {
         console.error("Error parsing stored results:", error);
@@ -87,7 +88,7 @@ const Results = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.good_matches.map((city, index) => (
                 <CityCard
-                  key={`good-${index}`}
+                  key={`good-${city.city}-${city.state}-${index}`}
                   city={city.city}
                   state={city.state}
                   description={city.positive || "A great match based on your preferences."}
@@ -109,7 +110,7 @@ const Results = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {results.bad_matches.map((city, index) => (
                   <CityCard
-                    key={`bad-${index}`}
+                    key={`bad-${city.city}-${city.state}-${index}`}
                     city={city.city}
                     state={city.state}
                     description={city.negative || "This city may not align well with your preferences."}

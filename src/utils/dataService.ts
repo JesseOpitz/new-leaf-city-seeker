@@ -128,6 +128,8 @@ export const calculateCityScores = (
     return { goodMatches: [], badMatches: [] };
   }
 
+  console.log(`Starting scoring for ${cities.length} cities with preferences:`, preferences);
+
   // Extract configuration from preferences
   const safetyPref = preferences[0] as number;
   const employmentPref = preferences[1] as number;
@@ -140,41 +142,56 @@ export const calculateCityScores = (
   const cityCount = preferences[8] as number || 5;
   const showBadMatches = preferences[9] as boolean || false;
   
+  // Filter out cities that don't have rank data
+  const validCities = cities.filter(city => 
+    city.crime_rank && city.emp_rank && city.div_rank && 
+    city.cost_rank && city.walk_rank && city.wfh_rank && 
+    city.density_rank && city.pol_rank
+  );
+  
+  console.log(`Filtered to ${validCities.length} cities with complete ranking data`);
+  
+  if (validCities.length === 0) {
+    return { goodMatches: [], badMatches: [] };
+  }
+  
   // Find max ranks for normalization
   const maxRanks = {
-    crime: Math.max(...cities.map(c => c.crime_rank || 0)),
-    emp: Math.max(...cities.map(c => c.emp_rank || 0)),
-    div: Math.max(...cities.map(c => c.div_rank || 0)),
-    cost: Math.max(...cities.map(c => c.cost_rank || 0)),
-    walk: Math.max(...cities.map(c => c.walk_rank || 0)),
-    wfh: Math.max(...cities.map(c => c.wfh_rank || 0)),
-    density: Math.max(...cities.map(c => c.density_rank || 0)),
-    pol: Math.max(...cities.map(c => c.pol_rank || 0))
+    crime: Math.max(...validCities.map(c => c.crime_rank || 0)),
+    emp: Math.max(...validCities.map(c => c.emp_rank || 0)),
+    div: Math.max(...validCities.map(c => c.div_rank || 0)),
+    cost: Math.max(...validCities.map(c => c.cost_rank || 0)),
+    walk: Math.max(...validCities.map(c => c.walk_rank || 0)),
+    wfh: Math.max(...validCities.map(c => c.wfh_rank || 0)),
+    density: Math.max(...validCities.map(c => c.density_rank || 0)),
+    pol: Math.max(...validCities.map(c => c.pol_rank || 0))
   };
   
+  console.log('Max ranks:', maxRanks);
+  
   // Calculate scores for each city
-  const scoredCities = cities.map(city => {
+  const scoredCities = validCities.map(city => {
     // For each category: invert rank (lower rank = better) and multiply by preference importance (0-8)
-    // For most categories, we want lower ranks, so we invert: (maxRank - city's rank) * preference
+    // For most categories, we want lower ranks, so we invert: (maxRank - city's rank + 1) * preference
     let score = 0;
     
     // Safety: invert crime rank (lower crime rank = safer)
-    const safetyScore = ((maxRanks.crime - (city.crime_rank || 0)) / maxRanks.crime) * safetyPref;
+    const safetyScore = ((maxRanks.crime - (city.crime_rank || 0) + 1) / maxRanks.crime) * safetyPref;
     
     // Employment: invert employment rank (lower rank = better employment)
-    const employmentScore = ((maxRanks.emp - (city.emp_rank || 0)) / maxRanks.emp) * employmentPref;
+    const employmentScore = ((maxRanks.emp - (city.emp_rank || 0) + 1) / maxRanks.emp) * employmentPref;
     
     // Diversity: invert diversity rank (lower rank = more diverse)
-    const diversityScore = ((maxRanks.div - (city.div_rank || 0)) / maxRanks.div) * diversityPref;
+    const diversityScore = ((maxRanks.div - (city.div_rank || 0) + 1) / maxRanks.div) * diversityPref;
     
     // Affordability: invert cost rank (lower rank = more affordable)
-    const affordabilityScore = ((maxRanks.cost - (city.cost_rank || 0)) / maxRanks.cost) * affordabilityPref;
+    const affordabilityScore = ((maxRanks.cost - (city.cost_rank || 0) + 1) / maxRanks.cost) * affordabilityPref;
     
     // Walkability: invert walkability rank (lower rank = more walkable)
-    const walkabilityScore = ((maxRanks.walk - (city.walk_rank || 0)) / maxRanks.walk) * walkabilityPref;
+    const walkabilityScore = ((maxRanks.walk - (city.walk_rank || 0) + 1) / maxRanks.walk) * walkabilityPref;
     
     // Remote Work: invert remote work rank (lower rank = better for remote work)
-    const remoteWorkScore = ((maxRanks.wfh - (city.wfh_rank || 0)) / maxRanks.wfh) * remoteWorkPref;
+    const remoteWorkScore = ((maxRanks.wfh - (city.wfh_rank || 0) + 1) / maxRanks.wfh) * remoteWorkPref;
     
     // Density: special handling - we compare the city's density rank to the preferred density
     // 0 = rural preference, 8 = urban preference
@@ -182,8 +199,8 @@ export const calculateCityScores = (
     const cityDensityNormalized = (city.density_rank || 0) / maxRanks.density; // Convert to 0-1 scale
     // Calculate how close the city's density matches user preference (1 = perfect match, 0 = furthest)
     const densityMatchScore = 1 - Math.abs(userDensityNormalized - cityDensityNormalized);
-    // Scale by the importance (5 is neutral)
-    const densityScore = densityMatchScore * 5;
+    // Scale by importance
+    const densityScore = densityMatchScore * densityPref;
     
     // Politics: special handling - we compare the city's political rank to the preferred politics
     // 0 = conservative preference, 8 = liberal preference
@@ -191,8 +208,8 @@ export const calculateCityScores = (
     const cityPoliticsNormalized = (city.pol_rank || 0) / maxRanks.pol; // Convert to 0-1 scale
     // Calculate how close the city's politics matches user preference (1 = perfect match, 0 = furthest)
     const politicsMatchScore = 1 - Math.abs(userPoliticsNormalized - cityPoliticsNormalized);
-    // Scale by the importance (5 is neutral)
-    const politicsScore = politicsMatchScore * 5;
+    // Scale by importance
+    const politicsScore = politicsMatchScore * politicsPref;
     
     // Sum all scores to get total score
     score = safetyScore + employmentScore + diversityScore + affordabilityScore +
@@ -207,12 +224,18 @@ export const calculateCityScores = (
   // Sort cities by score (descending)
   scoredCities.sort((a, b) => b.score - a.score);
   
+  console.log('Top 5 scored cities:', scoredCities.slice(0, 5).map(c => ({ city: c.city, state: c.state, score: c.score })));
+  console.log('Bottom 5 scored cities:', scoredCities.slice(-5).map(c => ({ city: c.city, state: c.state, score: c.score })));
+  
   // Get top and bottom cities based on cityCount
   const goodMatches = scoredCities.slice(0, cityCount);
   
+  // For bad matches, take from the bottom but make sure they don't overlap with good matches
   const badMatches = showBadMatches 
-    ? scoredCities.slice(-cityCount)
+    ? scoredCities.slice(-(cityCount)).reverse() // reverse so worst is first
     : [];
+  
+  console.log(`Returning ${goodMatches.length} good matches and ${badMatches.length} bad matches`);
   
   return { 
     goodMatches, 
