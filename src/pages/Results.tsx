@@ -23,6 +23,12 @@ const Results = () => {
       try {
         const parsedResults = JSON.parse(storedResults);
         console.log('Loaded results from localStorage:', parsedResults);
+        console.log('Good matches with descriptions:', parsedResults.good_matches?.map((city: any) => ({
+          city: city.city,
+          state: city.state,
+          positive: city.positive,
+          negative: city.negative
+        })));
         setResults(parsedResults);
       } catch (error) {
         console.error("Error parsing stored results:", error);
@@ -86,18 +92,27 @@ const Results = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {results.good_matches.map((city, index) => (
-                <CityCard
-                  key={`good-${city.city}-${city.state}-${index}`}
-                  city={city.city}
-                  state={city.state}
-                  description={city.positive || "A great match based on your preferences."}
-                  wikipediaUrl={city.Wikipedia_URL}
-                  thumbnailUrl={getThumbnailUrl(city.city, city.state)}
-                  isGoodMatch={true}
-                  onRequestPlan={() => handleRequestPlan(city.city, city.state)}
-                />
-              ))}
+              {results.good_matches.map((city, index) => {
+                console.log('Rendering good match city:', {
+                  city: city.city,
+                  state: city.state,
+                  positive: city.positive,
+                  hasPositive: !!city.positive
+                });
+                
+                return (
+                  <CityCard
+                    key={`good-${city.city}-${city.state}-${index}`}
+                    city={city.city}
+                    state={city.state}
+                    description={city.positive || "A great match based on your preferences."}
+                    wikipediaUrl={city.Wikipedia_URL}
+                    thumbnailUrl={getThumbnailUrl(city.city, city.state)}
+                    isGoodMatch={true}
+                    onRequestPlan={() => handleRequestPlan(city.city, city.state)}
+                  />
+                );
+              })}
             </div>
           </div>
           
@@ -108,17 +123,26 @@ const Results = () => {
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.bad_matches.map((city, index) => (
-                  <CityCard
-                    key={`bad-${city.city}-${city.state}-${index}`}
-                    city={city.city}
-                    state={city.state}
-                    description={city.negative || "This city may not align well with your preferences."}
-                    wikipediaUrl={city.Wikipedia_URL}
-                    thumbnailUrl={getThumbnailUrl(city.city, city.state)}
-                    isGoodMatch={false}
-                  />
-                ))}
+                {results.bad_matches.map((city, index) => {
+                  console.log('Rendering bad match city:', {
+                    city: city.city,
+                    state: city.state,
+                    negative: city.negative,
+                    hasNegative: !!city.negative
+                  });
+                  
+                  return (
+                    <CityCard
+                      key={`bad-${city.city}-${city.state}-${index}`}
+                      city={city.city}
+                      state={city.state}
+                      description={city.negative || "This city may not align well with your preferences."}
+                      wikipediaUrl={city.Wikipedia_URL}
+                      thumbnailUrl={getThumbnailUrl(city.city, city.state)}
+                      isGoodMatch={false}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
