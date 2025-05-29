@@ -29,78 +29,61 @@ export const loadCityData = async (): Promise<City[]> => {
   try {
     console.log('Starting to load city data...');
     
-    // Add a cache-busting parameter to prevent browser caching
-    const timestamp = new Date().getTime();
+    // Try multiple GitHub URLs with different approaches
+    const githubUrls = [
+      'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx',
+      'https://github.com/JesseOpitz/new-leaf-city-seeker/raw/main/public/masterfile.xlsx',
+      'https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/masterfile.xlsx',
+      'https://github.com/JesseOpitz/new-leaf-city-seeker/raw/main/masterfile.xlsx'
+    ];
     
-    // First try the local path which should be available in Netlify
-    console.log('Attempting to load data from local path...');
-    
-    const response = await fetch(`/masterfile.xlsx?t=${timestamp}`, { 
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch local file with status: ${response.status}`);
-    }
-    
-    console.log('Successfully fetched data file, processing...');
-    const arrayBuffer = await response.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json<City>(worksheet);
-    
-    console.log(`Successfully loaded ${data.length} cities`);
-    return data;
-  } catch (localError) {
-    console.error('Error loading local city data:', localError);
-    
-    try {
-      // As a fallback, try GitHub
-      console.log('Trying GitHub file as fallback...');
-      const timestamp = new Date().getTime();
-      const githubUrl = `https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/public/masterfile.xlsx?t=${timestamp}`;
-      
-      console.log(`Attempting to load from: ${githubUrl}`);
-      const response = await fetch(githubUrl, { 
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
+    for (const url of githubUrls) {
+      try {
+        console.log(`Attempting to load from: ${url}`);
+        
+        const response = await fetch(url, { 
+          method: 'GET',
+          headers: {
+            'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,*/*'
+          }
+        });
+        
+        if (response.ok) {
+          console.log(`Successfully fetched from: ${url}`);
+          const arrayBuffer = await response.arrayBuffer();
+          
+          if (arrayBuffer.byteLength === 0) {
+            throw new Error('Received empty file');
+          }
+          
+          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const data = XLSX.utils.sheet_to_json<City>(worksheet);
+          
+          console.log(`Successfully loaded ${data.length} cities from ${url}`);
+          console.log('Sample city data:', data[0]);
+          console.log('Cities with positive descriptions:', data.filter(c => c.positive).length);
+          console.log('Cities with negative descriptions:', data.filter(c => c.negative).length);
+          
+          if (data.length === 0) {
+            throw new Error('No data found in spreadsheet');
+          }
+          
+          return data;
+        } else {
+          console.log(`Failed to fetch from ${url}: ${response.status} ${response.statusText}`);
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch from GitHub with status: ${response.status}`);
+      } catch (error) {
+        console.error(`Error loading from ${url}:`, error);
       }
-      
-      const arrayBuffer = await response.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json<City>(worksheet);
-      
-      console.log(`Successfully loaded ${data.length} cities from GitHub`);
-      return data;
-    } catch (githubError) {
-      console.error('Error loading GitHub city data:', githubError);
-      
-      // Provide a simple dataset as emergency fallback
-      console.warn('Loading emergency fallback data with minimal city set');
-      return [
-        { city: "New York", state: "New York" },
-        { city: "Los Angeles", state: "California" },
-        { city: "Chicago", state: "Illinois" },
-        { city: "Houston", state: "Texas" },
-        { city: "Phoenix", state: "Arizona" }
-      ];
     }
+    
+    throw new Error('All GitHub URLs failed to load data');
+    
+  } catch (error) {
+    console.error('Complete failure to load city data:', error);
+    throw new Error(`Failed to load city data: ${error.message}`);
   }
 };
 
@@ -130,7 +113,7 @@ export const calculateCityScores = (
 
   if (!cities || cities.length === 0) {
     console.log('No cities to score');
-    return { goodMatches: [], badMatches: [] };
+    throw new Error('No city data available for scoring');
   }
 
   // Extract configuration from preferences
@@ -151,55 +134,39 @@ export const calculateCityScores = (
     cityCount, showBadMatches
   });
   
-  // Filter out cities that don't have rank data - be more lenient
+  // Filter cities with ranking data, but be more lenient
   const validCities = cities.filter(city => {
-    const hasRanks = city.crime_rank !== undefined && city.crime_rank !== null &&
-                    city.emp_rank !== undefined && city.emp_rank !== null &&
-                    city.div_rank !== undefined && city.div_rank !== null &&
-                    city.cost_rank !== undefined && city.cost_rank !== null &&
-                    city.walk_rank !== undefined && city.walk_rank !== null &&
-                    city.wfh_rank !== undefined && city.wfh_rank !== null &&
-                    city.density_rank !== undefined && city.density_rank !== null &&
-                    city.pol_rank !== undefined && city.pol_rank !== null;
+    // Check if at least some ranking data exists
+    const hasAnyRanks = [
+      city.crime_rank, city.emp_rank, city.div_rank, city.cost_rank,
+      city.walk_rank, city.wfh_rank, city.density_rank, city.pol_rank
+    ].some(rank => rank !== undefined && rank !== null && !isNaN(Number(rank)));
     
-    if (!hasRanks) {
-      console.log('City missing rank data:', city.city, city.state, {
-        crime_rank: city.crime_rank,
-        emp_rank: city.emp_rank,
-        div_rank: city.div_rank,
-        cost_rank: city.cost_rank,
-        walk_rank: city.walk_rank,
-        wfh_rank: city.wfh_rank,
-        density_rank: city.density_rank,
-        pol_rank: city.pol_rank
-      });
-    }
-    
-    return hasRanks;
+    return hasAnyRanks;
   });
   
   console.log('Valid cities after filtering:', validCities.length);
+  console.log('Sample valid cities:', validCities.slice(0, 3).map(c => ({
+    city: c.city,
+    state: c.state,
+    positive: c.positive ? 'Has positive' : 'No positive',
+    negative: c.negative ? 'Has negative' : 'No negative'
+  })));
   
   if (validCities.length === 0) {
-    console.log('No valid cities after filtering - returning fallback');
-    // Return first few cities as fallback
-    const fallbackCities = cities.slice(0, cityCount);
-    return { 
-      goodMatches: fallbackCities, 
-      badMatches: showBadMatches ? cities.slice(-cityCount).reverse() : [] 
-    };
+    throw new Error('No cities have valid ranking data');
   }
   
   // Find max ranks for normalization
   const maxRanks = {
-    crime: Math.max(...validCities.map(c => c.crime_rank || 0)),
-    emp: Math.max(...validCities.map(c => c.emp_rank || 0)),
-    div: Math.max(...validCities.map(c => c.div_rank || 0)),
-    cost: Math.max(...validCities.map(c => c.cost_rank || 0)),
-    walk: Math.max(...validCities.map(c => c.walk_rank || 0)),
-    wfh: Math.max(...validCities.map(c => c.wfh_rank || 0)),
-    density: Math.max(...validCities.map(c => c.density_rank || 0)),
-    pol: Math.max(...validCities.map(c => c.pol_rank || 0))
+    crime: Math.max(...validCities.map(c => Number(c.crime_rank) || 0)),
+    emp: Math.max(...validCities.map(c => Number(c.emp_rank) || 0)),
+    div: Math.max(...validCities.map(c => Number(c.div_rank) || 0)),
+    cost: Math.max(...validCities.map(c => Number(c.cost_rank) || 0)),
+    walk: Math.max(...validCities.map(c => Number(c.walk_rank) || 0)),
+    wfh: Math.max(...validCities.map(c => Number(c.wfh_rank) || 0)),
+    density: Math.max(...validCities.map(c => Number(c.density_rank) || 0)),
+    pol: Math.max(...validCities.map(c => Number(c.pol_rank) || 0))
   };
   
   console.log('Max ranks:', maxRanks);
@@ -209,47 +176,47 @@ export const calculateCityScores = (
     let totalScore = 0;
     
     // For ranking categories, lower rank = better, so we invert
-    if (safetyPref > 0) {
-      const safetyScore = ((maxRanks.crime - (city.crime_rank || 0) + 1) / maxRanks.crime) * safetyPref;
+    if (safetyPref > 0 && city.crime_rank) {
+      const safetyScore = ((maxRanks.crime - Number(city.crime_rank) + 1) / maxRanks.crime) * safetyPref;
       totalScore += safetyScore;
     }
     
-    if (employmentPref > 0) {
-      const employmentScore = ((maxRanks.emp - (city.emp_rank || 0) + 1) / maxRanks.emp) * employmentPref;
+    if (employmentPref > 0 && city.emp_rank) {
+      const employmentScore = ((maxRanks.emp - Number(city.emp_rank) + 1) / maxRanks.emp) * employmentPref;
       totalScore += employmentScore;
     }
     
-    if (diversityPref > 0) {
-      const diversityScore = ((maxRanks.div - (city.div_rank || 0) + 1) / maxRanks.div) * diversityPref;
+    if (diversityPref > 0 && city.div_rank) {
+      const diversityScore = ((maxRanks.div - Number(city.div_rank) + 1) / maxRanks.div) * diversityPref;
       totalScore += diversityScore;
     }
     
-    if (affordabilityPref > 0) {
-      const affordabilityScore = ((maxRanks.cost - (city.cost_rank || 0) + 1) / maxRanks.cost) * affordabilityPref;
+    if (affordabilityPref > 0 && city.cost_rank) {
+      const affordabilityScore = ((maxRanks.cost - Number(city.cost_rank) + 1) / maxRanks.cost) * affordabilityPref;
       totalScore += affordabilityScore;
     }
     
-    if (walkabilityPref > 0) {
-      const walkabilityScore = ((maxRanks.walk - (city.walk_rank || 0) + 1) / maxRanks.walk) * walkabilityPref;
+    if (walkabilityPref > 0 && city.walk_rank) {
+      const walkabilityScore = ((maxRanks.walk - Number(city.walk_rank) + 1) / maxRanks.walk) * walkabilityPref;
       totalScore += walkabilityScore;
     }
     
-    if (remoteWorkPref > 0) {
-      const remoteWorkScore = ((maxRanks.wfh - (city.wfh_rank || 0) + 1) / maxRanks.wfh) * remoteWorkPref;
+    if (remoteWorkPref > 0 && city.wfh_rank) {
+      const remoteWorkScore = ((maxRanks.wfh - Number(city.wfh_rank) + 1) / maxRanks.wfh) * remoteWorkPref;
       totalScore += remoteWorkScore;
     }
     
     // For density and politics, we match preference to city's position
-    if (densityPref > 0) {
+    if (densityPref > 0 && city.density_rank) {
       const userDensityNormalized = densityPref / 8;
-      const cityDensityNormalized = (city.density_rank || 0) / maxRanks.density;
+      const cityDensityNormalized = Number(city.density_rank) / maxRanks.density;
       const densityMatchScore = 1 - Math.abs(userDensityNormalized - cityDensityNormalized);
       totalScore += densityMatchScore * densityPref;
     }
     
-    if (politicsPref > 0) {
+    if (politicsPref > 0 && city.pol_rank) {
       const userPoliticsNormalized = politicsPref / 8;
-      const cityPoliticsNormalized = (city.pol_rank || 0) / maxRanks.pol;
+      const cityPoliticsNormalized = Number(city.pol_rank) / maxRanks.pol;
       const politicsMatchScore = 1 - Math.abs(userPoliticsNormalized - cityPoliticsNormalized);
       totalScore += politicsMatchScore * politicsPref;
     }
@@ -266,7 +233,8 @@ export const calculateCityScores = (
   console.log('Top 10 scored cities:', scoredCities.slice(0, 10).map(c => ({ 
     city: c.city, 
     state: c.state, 
-    score: c.score.toFixed(2) 
+    score: c.score.toFixed(2),
+    positive: c.positive ? 'Has positive' : 'No positive'
   })));
   
   // Get top cities for good matches

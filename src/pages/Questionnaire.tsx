@@ -74,8 +74,7 @@ const Questionnaire = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [cityData, setCityData] = useState<any[]>([]);
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
-  const [loadingAttempts, setLoadingAttempts] = useState<number>(0);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [dataError, setDataError] = useState<string>('');
 
   // Check if we should use AI-generated preferences
   useEffect(() => {
@@ -103,39 +102,31 @@ const Questionnaire = () => {
   useEffect(() => {
     const fetchCityData = async () => {
       try {
-        console.log(`Attempt ${loadingAttempts + 1} to load city data...`);
+        console.log('Fetching city data...');
         const data = await loadCityData();
         
         if (data && data.length > 0) {
-          console.log(`Successfully loaded ${data.length} cities on attempt ${loadingAttempts + 1}`);
+          console.log(`Successfully loaded ${data.length} cities`);
           setCityData(data);
           setDataLoaded(true);
+          setDataError('');
         } else {
           throw new Error("No city data returned or empty array");
         }
       } catch (error) {
-        console.error(`Error loading data (attempt ${loadingAttempts + 1}):`, error);
+        console.error('Error loading city data:', error);
+        setDataError(error.message || 'Failed to load city data');
         
-        if (loadingAttempts < 3) {
-          // Retry with exponential backoff
-          const delay = Math.pow(2, loadingAttempts) * 1000;
-          console.log(`Retrying in ${delay/1000} seconds...`);
-          
-          setTimeout(() => {
-            setLoadingAttempts(prev => prev + 1);
-          }, delay);
-        } else {
-          toast({
-            title: "Data Loading Issue",
-            description: "We're having trouble loading city data. Please try refreshing the page.",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Data Loading Error",
+          description: "Unable to load city data from GitHub. Please check your internet connection and try again.",
+          variant: "destructive",
+        });
       }
     };
     
     fetchCityData();
-  }, [loadingAttempts, toast, isInitialLoad]);
+  }, [toast]);
 
   // Progress calculation
   const totalSteps = questionSteps.length + 1; // +1 for the final options step
@@ -165,39 +156,17 @@ const Questionnaire = () => {
     setIsSubmitting(true);
     
     if (!dataLoaded || cityData.length === 0) {
-      // Try one more time to load data
-      try {
-        console.log("Final attempt to load data before submission...");
-        const freshData = await loadCityData();
-        
-        if (!freshData || freshData.length === 0) {
-          throw new Error("Still no city data available");
-        }
-        
-        setCityData(freshData);
-        setDataLoaded(true);
-        
-        // Continue with submission using this fresh data
-        processSubmission(freshData);
-      } catch (error) {
-        console.error("Error on final data loading attempt:", error);
-        toast({
-          title: "Data Not Available",
-          description: "City data could not be loaded. Please try again later or check your internet connection.",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-      }
-    } else {
-      // Use already loaded data
-      processSubmission(cityData);
+      toast({
+        title: "Data Not Available",
+        description: "City data is required to generate recommendations. Please refresh and try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
     }
-  };
-  
-  // Helper function to process submission once we have data
-  const processSubmission = (data: any[]) => {
+
     try {
-      console.log(`Processing submission with ${data.length} cities`);
+      console.log(`Processing submission with ${cityData.length} cities`);
       
       // Create full preferences array (answers + cityCount + showBadMatches)
       const fullPreferences: (number | boolean)[] = [...answers, cityCount, showBadMatches];
@@ -205,7 +174,7 @@ const Questionnaire = () => {
       console.log("Full preferences:", fullPreferences);
       
       // Calculate city matches using our utility function
-      const { goodMatches, badMatches } = calculateCityScores(data, fullPreferences);
+      const { goodMatches, badMatches } = calculateCityScores(cityData, fullPreferences);
       
       console.log(`Found ${goodMatches.length} good matches and ${badMatches.length} bad matches`);
       
@@ -228,12 +197,12 @@ const Questionnaire = () => {
       setIsSubmitting(false);
       toast({
         title: "Processing Error",
-        description: "There was a problem processing your preferences. Please try again.",
+        description: error.message || "There was a problem processing your preferences. Please try again.",
         variant: "destructive",
       });
     }
   };
-
+  
   // Current question data
   const currentQuestion = currentStep < questionSteps.length ? questionSteps[currentStep] : null;
   const isLastStep = currentStep === questionSteps.length;
@@ -261,6 +230,17 @@ const Questionnaire = () => {
               Step {currentStep + 1} of {totalSteps}
             </div>
           </div>
+
+          {dataError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-sm">
+                <strong>Data Loading Error:</strong> {dataError}
+              </p>
+              <p className="text-red-600 text-sm mt-1">
+                Please refresh the page to try again.
+              </p>
+            </div>
+          )}
           
           <Card className="questionnaire-card animate-fade-in">
             <CardHeader>
@@ -317,9 +297,15 @@ const Questionnaire = () => {
                     />
                   </div>
 
-                  {!dataLoaded && (
+                  {!dataLoaded && !dataError && (
                     <div className="text-amber-600 text-sm mt-4 p-2 bg-amber-50 border border-amber-200 rounded">
-                      Note: City data is still loading. You can continue, but there may be a slight delay.
+                      Loading city data from GitHub...
+                    </div>
+                  )}
+
+                  {dataLoaded && (
+                    <div className="text-green-600 text-sm mt-4 p-2 bg-green-50 border border-green-200 rounded">
+                      ✓ City data loaded successfully ({cityData.length} cities)
                     </div>
                   )}
                 </div>
@@ -344,7 +330,7 @@ const Questionnaire = () => {
               {isLastStep && (
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !dataLoaded || !!dataError}
                   className="leaf-bg-gradient hover:opacity-90"
                 >
                   {isSubmitting ? (
