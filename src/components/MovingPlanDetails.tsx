@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from 'lucide-react';
+import { sendMovingPlanEmail } from '@/services/emailService';
+import { useToast } from "@/components/ui/use-toast";
 
 interface MovingPlanDetailsProps {
   city: string;
@@ -25,6 +26,49 @@ const MovingPlanDetails = ({
   isProcessing,
   onCancel
 }: MovingPlanDetailsProps) => {
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address to receive the moving plan.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('Starting moving plan generation and email process...');
+      
+      // Call the parent's onSubmit to handle payment processing
+      onSubmit(e);
+      
+      // Generate and send the moving plan
+      await sendMovingPlanEmail({
+        city,
+        state,
+        questionnaireData,
+        userEmail: email
+      });
+      
+      toast({
+        title: "Success!",
+        description: `Your personalized moving plan for ${city}, ${state} has been generated and sent to ${email}. Please check your inbox (including spam folder) within the next few minutes.`,
+      });
+      
+    } catch (error) {
+      console.error('Error in moving plan process:', error);
+      toast({
+        title: "Plan Generation Error",
+        description: "There was an issue generating your moving plan. Please try again or contact support.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Determine timeline description based on questionnaire data
   const getTimelineDescription = () => {
     switch(questionnaireData?.timeline) {
@@ -89,8 +133,16 @@ const MovingPlanDetails = ({
           <li className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
+              <span className="font-medium">AI-Generated Comprehensive Plan:</span>
+              <p className="text-sm text-gray-600">2000+ word detailed moving guide created specifically for your situation using advanced AI</p>
+            </div>
+          </li>
+          
+          <li className="flex items-start">
+            <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+            <div>
               <span className="font-medium">Personalized Timeline:</span>
-              <p className="text-sm text-gray-600">{getTimelineDescription()}</p>
+              <p className="text-sm text-gray-600">Custom checklist and milestones based on your moving timeline and household needs</p>
             </div>
           </li>
           
@@ -98,37 +150,37 @@ const MovingPlanDetails = ({
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
               <span className="font-medium">Budget Planning:</span>
-              <p className="text-sm text-gray-600">{getBudgetDescription()}</p>
+              <p className="text-sm text-gray-600">Detailed cost breakdown specific to {city} with budget optimization strategies</p>
             </div>
           </li>
           
           <li className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">Housing Recommendations:</span>
-              <p className="text-sm text-gray-600">{getHousingDescription()}</p>
+              <span className="font-medium">Housing Strategy:</span>
+              <p className="text-sm text-gray-600">Neighborhood recommendations and market insights for {city}</p>
             </div>
           </li>
           
           <li className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">Local Insights:</span>
-              <p className="text-sm text-gray-600">Neighborhood guides, community resources, and insider tips for {city}</p>
+              <span className="font-medium">Local Resources & Contacts:</span>
+              <p className="text-sm text-gray-600">Essential services, utilities, and community resources specific to {city}</p>
             </div>
           </li>
-          
+
           <li className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">Essential Contacts:</span>
-              <p className="text-sm text-gray-600">Curated list of reliable service providers, community resources, and emergency contacts</p>
+              <span className="font-medium">30-60-90 Day Action Plan:</span>
+              <p className="text-sm text-gray-600">Step-by-step integration guide for your first three months in {city}</p>
             </div>
           </li>
         </ul>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
@@ -143,13 +195,13 @@ const MovingPlanDetails = ({
             className="w-full"
           />
           <p className="text-xs text-gray-500 mt-1">
-            We'll send your personalized moving plan to this email within 24 hours.
+            Your personalized moving plan will be generated and sent to this email immediately after payment.
           </p>
         </div>
         
         <div className="text-center">
           <p className="text-2xl font-bold text-leaf-dark">$5.99</p>
-          <p className="text-sm text-gray-500">One-time payment</p>
+          <p className="text-sm text-gray-500">One-time payment • Instant delivery</p>
         </div>
         
         <div className="flex justify-end space-x-3">
