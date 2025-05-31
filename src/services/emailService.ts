@@ -1,5 +1,5 @@
 
-import { City } from '@/utils/dataService';
+import { EMAIL_CONFIG, OPENAI_CONFIG } from '@/config/emailConfig';
 
 interface MovingPlanData {
   city: string;
@@ -8,26 +8,8 @@ interface MovingPlanData {
   userEmail: string;
 }
 
-// Email service configuration - you'll need to provide these
-const EMAIL_CONFIG = {
-  // You'll need to provide these in your next message:
-  SMTP_HOST: process.env.SMTP_HOST || 'your-smtp-host.com',
-  SMTP_PORT: process.env.SMTP_PORT || '587',
-  SMTP_USER: process.env.SMTP_USER || 'your-email@domain.com',
-  SMTP_PASS: process.env.SMTP_PASS || 'your-app-password',
-  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@your-domain.com',
-  FROM_NAME: process.env.FROM_NAME || 'New Leaf City Seeker'
-};
-
-// OpenAI configuration
-const OPENAI_CONFIG = {
-  API_KEY: process.env.OPENAI_API_KEY || 'your-openai-api-key',
-  MODEL: 'gpt-4o',
-  MAX_TOKENS: 4000
-};
-
 export const generatePersonalizedPlan = async (planData: MovingPlanData): Promise<string> => {
-  const { city, state, questionnaireData, userEmail } = planData;
+  const { city, state, questionnaireData } = planData;
   
   const prompt = `Create a comprehensive, personalized moving plan for someone relocating to ${city}, ${state}. 
 
@@ -112,7 +94,7 @@ Length: Approximately 2000-2500 words with detailed, actionable content.`;
           }
         ],
         max_tokens: OPENAI_CONFIG.MAX_TOKENS,
-        temperature: 0.7,
+        temperature: OPENAI_CONFIG.TEMPERATURE,
       }),
     });
 
@@ -146,8 +128,8 @@ export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boo
     // Convert plan to HTML format for better email presentation
     const htmlPlan = convertPlanToHTML(movingPlan, planData);
     
-    // Send email (you'll need to implement your preferred email service)
-    const emailSent = await sendEmail({
+    // Send email via SendGrid
+    const emailSent = await sendEmailViaSendGrid({
       to: planData.userEmail,
       subject: `Your Personalized Moving Plan for ${planData.city}, ${planData.state}`,
       html: htmlPlan,
@@ -223,27 +205,56 @@ const convertPlanToHTML = (plan: string, planData: MovingPlanData): string => {
   `;
 };
 
-// Email sending function - you'll need to implement based on your email service
-const sendEmail = async (emailData: {
+const sendEmailViaSendGrid = async (emailData: {
   to: string;
   subject: string;
   html: string;
   text: string;
 }): Promise<boolean> => {
-  // This is a placeholder - you'll need to implement with your email service
-  // Options include: SendGrid, Mailgun, AWS SES, Nodemailer with SMTP, etc.
-  
-  console.log('Email would be sent with the following data:', {
-    to: emailData.to,
-    subject: emailData.subject,
-    contentLength: emailData.html.length
-  });
-  
-  // For now, simulate success
-  // Replace this with actual email sending logic
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, 1000);
-  });
+  try {
+    console.log('Sending email via SendGrid...');
+    
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${EMAIL_CONFIG.SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [
+          {
+            to: [{ email: emailData.to }],
+            subject: emailData.subject,
+          }
+        ],
+        from: {
+          email: EMAIL_CONFIG.FROM_EMAIL,
+          name: EMAIL_CONFIG.FROM_NAME,
+        },
+        content: [
+          {
+            type: 'text/plain',
+            value: emailData.text,
+          },
+          {
+            type: 'text/html',
+            value: emailData.html,
+          }
+        ],
+      }),
+    });
+
+    if (response.ok) {
+      console.log('Email sent successfully via SendGrid');
+      return true;
+    } else {
+      const errorText = await response.text();
+      console.error('SendGrid API error:', response.status, errorText);
+      throw new Error(`SendGrid API error: ${response.status}`);
+    }
+    
+  } catch (error) {
+    console.error('Error sending email via SendGrid:', error);
+    throw error;
+  }
 };
