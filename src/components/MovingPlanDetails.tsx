@@ -47,16 +47,18 @@ const MovingPlanDetails = ({
       console.log('Questionnaire data:', questionnaireData);
       console.log('Email:', email);
       
-      // Call the parent's onSubmit to handle payment processing
-      onSubmit(e);
-      
-      // Generate and send the moving plan
+      // Generate and send the moving plan FIRST
+      console.log('About to call sendMovingPlanEmail...');
       await sendMovingPlanEmail({
         city,
         state,
         questionnaireData,
         userEmail: email
       });
+      
+      console.log('Moving plan email sent successfully, now calling parent onSubmit...');
+      // Call the parent's onSubmit to handle payment processing AFTER email is sent
+      onSubmit(e);
       
       toast({
         title: "Success!",

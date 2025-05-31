@@ -1,3 +1,4 @@
+
 import { EMAIL_CONFIG, OPENAI_CONFIG } from '../config/emailConfig';
 
 interface MovingPlanData {
@@ -12,6 +13,7 @@ export const generatePersonalizedPlan = async (planData: MovingPlanData): Promis
   
   console.log('Starting plan generation for:', city, state);
   console.log('OpenAI API Key present:', !!OPENAI_CONFIG.API_KEY);
+  console.log('OpenAI API Key length:', OPENAI_CONFIG.API_KEY?.length || 0);
   
   if (!OPENAI_CONFIG.API_KEY) {
     throw new Error('OpenAI API key is missing. Please check your environment variables.');
@@ -135,7 +137,12 @@ export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boo
   try {
     console.log(`Generating and sending moving plan for ${planData.city}, ${planData.state}`);
     console.log('SendGrid API Key present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
+    console.log('SendGrid API Key length:', EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0);
     console.log('From email:', EMAIL_CONFIG.FROM_EMAIL);
+    console.log('Environment check:');
+    console.log('- REACT_APP_SENDGRID_API_KEY exists:', !!process.env.REACT_APP_SENDGRID_API_KEY);
+    console.log('- REACT_APP_OPENAI_API_KEY exists:', !!process.env.REACT_APP_OPENAI_API_KEY);
+    console.log('- REACT_APP_FROM_EMAIL exists:', !!process.env.REACT_APP_FROM_EMAIL);
     
     if (!EMAIL_CONFIG.SENDGRID_API_KEY) {
       throw new Error('SendGrid API key is missing. Please check your environment variables.');
@@ -236,6 +243,12 @@ const sendEmailViaSendGrid = async (emailData: {
 }): Promise<boolean> => {
   try {
     console.log('Sending email via SendGrid to:', emailData.to);
+    console.log('Using SendGrid API key ending with:', EMAIL_CONFIG.SENDGRID_API_KEY?.slice(-4));
+    console.log('Request payload being sent to SendGrid:', {
+      personalizations: [{ to: [{ email: emailData.to }], subject: emailData.subject }],
+      from: { email: EMAIL_CONFIG.FROM_EMAIL, name: EMAIL_CONFIG.FROM_NAME },
+      content_types: ['text/plain', 'text/html']
+    });
     
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',

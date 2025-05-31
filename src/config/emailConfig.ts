@@ -24,6 +24,11 @@ export const validateConfiguration = (): { isValid: boolean; missingKeys: string
   
   const missingKeys = requiredKeys.filter(key => !process.env[key]);
   
+  console.log('Environment variable validation:');
+  requiredKeys.forEach(key => {
+    console.log(`${key}:`, process.env[key] ? 'SET' : 'MISSING');
+  });
+  
   return {
     isValid: missingKeys.length === 0,
     missingKeys
