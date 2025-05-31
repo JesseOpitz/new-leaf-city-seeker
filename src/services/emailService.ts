@@ -134,26 +134,54 @@ Length: Approximately 2000-2500 words with detailed, actionable content.`;
 
 export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boolean> => {
   try {
-    console.log(`=== STARTING EMAIL PROCESS ===`);
+    console.log(`=== EMAIL SERVICE DEBUG START ===`);
     console.log(`Generating and sending moving plan for ${planData.city}, ${planData.state}`);
+    console.log('Plan data received:', {
+      city: planData.city,
+      state: planData.state,
+      userEmail: planData.userEmail,
+      hasQuestionnaireData: !!planData.questionnaireData
+    });
     
-    // Run validation and log results
+    // Run validation FIRST and log detailed results
+    console.log('About to run validateConfiguration...');
     const validation = validateConfiguration();
-    console.log('Configuration validation result:', validation);
+    console.log('Validation completed:', validation);
     
-    console.log('EMAIL_CONFIG values:');
+    // Log the actual config values being used
+    console.log('Current EMAIL_CONFIG at runtime:');
     console.log('- SENDGRID_API_KEY present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
-    console.log('- SENDGRID_API_KEY length:', EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0);
+    console.log('- SENDGRID_API_KEY type:', typeof EMAIL_CONFIG.SENDGRID_API_KEY);
+    console.log('- SENDGRID_API_KEY value preview:', EMAIL_CONFIG.SENDGRID_API_KEY ? EMAIL_CONFIG.SENDGRID_API_KEY.substring(0, 10) + '...' : 'EMPTY');
     console.log('- FROM_EMAIL:', EMAIL_CONFIG.FROM_EMAIL);
     console.log('- FROM_NAME:', EMAIL_CONFIG.FROM_NAME);
     
-    if (!EMAIL_CONFIG.SENDGRID_API_KEY) {
-      throw new Error('SendGrid API key is missing. Please check your VITE_SENDGRID_API_KEY environment variable in Netlify.');
+    console.log('Current OPENAI_CONFIG at runtime:');
+    console.log('- API_KEY present:', !!OPENAI_CONFIG.API_KEY);
+    console.log('- API_KEY type:', typeof OPENAI_CONFIG.API_KEY);
+    console.log('- API_KEY value preview:', OPENAI_CONFIG.API_KEY ? OPENAI_CONFIG.API_KEY.substring(0, 10) + '...' : 'EMPTY');
+    
+    // Check if validation failed
+    if (!validation.isValid) {
+      const errorMessage = `Configuration validation failed. Missing environment variables: ${validation.missingKeys.join(', ')}. Please check your Netlify environment variables.`;
+      console.error('VALIDATION FAILED:', errorMessage);
+      throw new Error(errorMessage);
     }
     
-    if (!EMAIL_CONFIG.FROM_EMAIL) {
-      throw new Error('From email is missing. Please check your VITE_FROM_EMAIL environment variable in Netlify.');
+    // Double-check the specific keys we need
+    if (!EMAIL_CONFIG.SENDGRID_API_KEY || EMAIL_CONFIG.SENDGRID_API_KEY.trim() === '') {
+      const detailsMsg = `SendGrid API key is missing or empty. Current value type: ${typeof EMAIL_CONFIG.SENDGRID_API_KEY}, length: ${EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0}`;
+      console.error('SENDGRID KEY CHECK FAILED:', detailsMsg);
+      throw new Error(`SendGrid API key is missing. Please check your VITE_SENDGRID_API_KEY environment variable in Netlify. ${detailsMsg}`);
     }
+    
+    if (!EMAIL_CONFIG.FROM_EMAIL || EMAIL_CONFIG.FROM_EMAIL.trim() === '') {
+      const detailsMsg = `From email is missing or empty. Current value: ${EMAIL_CONFIG.FROM_EMAIL}`;
+      console.error('FROM EMAIL CHECK FAILED:', detailsMsg);
+      throw new Error(`From email is missing. Please check your VITE_FROM_EMAIL environment variable in Netlify. ${detailsMsg}`);
+    }
+    
+    console.log('All validations passed, proceeding with plan generation...');
     
     // Generate the personalized plan
     const movingPlan = await generatePersonalizedPlan(planData);
@@ -177,7 +205,12 @@ export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boo
     }
     
   } catch (error) {
-    console.error('Error sending moving plan email:', error);
+    console.error('Error in sendMovingPlanEmail:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     throw error;
   }
 };

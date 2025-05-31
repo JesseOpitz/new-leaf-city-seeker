@@ -25,20 +25,50 @@ export const validateConfiguration = (): { isValid: boolean; missingKeys: string
   const envVars = import.meta.env;
   const missingKeys = requiredKeys.filter(key => !envVars[key]);
   
-  console.log('=== DETAILED ENVIRONMENT VARIABLE DEBUG ===');
-  console.log('import.meta.env object keys containing VITE_:', Object.keys(envVars).filter(key => key.includes('VITE_')));
-  console.log('All import.meta.env keys:', Object.keys(envVars));
-  console.log('Environment variable validation:');
-  requiredKeys.forEach(key => {
-    const value = envVars[key];
-    console.log(`${key}:`, value ? `SET (${value.length} chars)` : 'MISSING');
-    console.log(`${key} raw value:`, value);
+  console.log('=== COMPREHENSIVE ENVIRONMENT DEBUG ===');
+  console.log('Current environment mode:', envVars.MODE);
+  console.log('Is production build:', envVars.PROD);
+  console.log('Is development build:', envVars.DEV);
+  console.log('Base URL:', envVars.BASE_URL);
+  
+  console.log('Raw import.meta.env object:', envVars);
+  console.log('All environment variable keys:', Object.keys(envVars));
+  console.log('Keys containing VITE_:', Object.keys(envVars).filter(key => key.includes('VITE_')));
+  
+  console.log('Direct access attempts:');
+  console.log('- import.meta.env.VITE_SENDGRID_API_KEY:', import.meta.env.VITE_SENDGRID_API_KEY);
+  console.log('- import.meta.env.VITE_OPENAI_API_KEY:', import.meta.env.VITE_OPENAI_API_KEY);
+  console.log('- import.meta.env.VITE_FROM_EMAIL:', import.meta.env.VITE_FROM_EMAIL);
+  
+  console.log('Checking for alternative naming patterns:');
+  Object.keys(envVars).forEach(key => {
+    if (key.includes('SENDGRID') || key.includes('OPENAI') || key.includes('EMAIL')) {
+      console.log(`Found related key: ${key} = ${envVars[key]}`);
+    }
   });
   
-  console.log('EMAIL_CONFIG.SENDGRID_API_KEY:', EMAIL_CONFIG.SENDGRID_API_KEY);
-  console.log('EMAIL_CONFIG.FROM_EMAIL:', EMAIL_CONFIG.FROM_EMAIL);
-  console.log('OPENAI_CONFIG.API_KEY:', OPENAI_CONFIG.API_KEY);
-  console.log('=== END DEBUG ===');
+  console.log('Environment variable validation results:');
+  requiredKeys.forEach(key => {
+    const value = envVars[key];
+    console.log(`${key}:`, value ? `SET (${value.length} chars)` : 'MISSING/UNDEFINED');
+    if (value) {
+      console.log(`${key} first 10 chars:`, value.substring(0, 10));
+    }
+  });
+  
+  console.log('EMAIL_CONFIG object values:');
+  console.log('- SENDGRID_API_KEY present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
+  console.log('- SENDGRID_API_KEY length:', EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0);
+  console.log('- FROM_EMAIL:', EMAIL_CONFIG.FROM_EMAIL);
+  console.log('- FROM_NAME:', EMAIL_CONFIG.FROM_NAME);
+  
+  console.log('OPENAI_CONFIG object values:');
+  console.log('- API_KEY present:', !!OPENAI_CONFIG.API_KEY);
+  console.log('- API_KEY length:', OPENAI_CONFIG.API_KEY?.length || 0);
+  
+  console.log('Missing keys:', missingKeys);
+  console.log('Configuration valid:', missingKeys.length === 0);
+  console.log('=== END COMPREHENSIVE DEBUG ===');
   
   return {
     isValid: missingKeys.length === 0,
