@@ -148,11 +148,11 @@ export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boo
     console.log('- FROM_NAME:', EMAIL_CONFIG.FROM_NAME);
     
     if (!EMAIL_CONFIG.SENDGRID_API_KEY) {
-      throw new Error('SendGrid API key is missing. Please check your REACT_APP_SENDGRID_API_KEY environment variable in Netlify.');
+      throw new Error('SendGrid API key is missing. Please check your VITE_SENDGRID_API_KEY environment variable in Netlify.');
     }
     
     if (!EMAIL_CONFIG.FROM_EMAIL) {
-      throw new Error('From email is missing. Please check your REACT_APP_FROM_EMAIL environment variable in Netlify.');
+      throw new Error('From email is missing. Please check your VITE_FROM_EMAIL environment variable in Netlify.');
     }
     
     // Generate the personalized plan

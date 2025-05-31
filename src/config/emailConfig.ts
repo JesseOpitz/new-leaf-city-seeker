@@ -2,13 +2,13 @@
 // Email and API Configuration
 export const EMAIL_CONFIG = {
   // SendGrid Configuration
-  SENDGRID_API_KEY: process.env.REACT_APP_SENDGRID_API_KEY || '',
-  FROM_EMAIL: process.env.REACT_APP_FROM_EMAIL || 'noreply@your-domain.com',
-  FROM_NAME: process.env.REACT_APP_FROM_NAME || 'New Leaf City Seeker',
+  SENDGRID_API_KEY: import.meta.env.VITE_SENDGRID_API_KEY || '',
+  FROM_EMAIL: import.meta.env.VITE_FROM_EMAIL || 'noreply@your-domain.com',
+  FROM_NAME: import.meta.env.VITE_FROM_NAME || 'New Leaf City Seeker',
 };
 
 export const OPENAI_CONFIG = {
-  API_KEY: process.env.REACT_APP_OPENAI_API_KEY || '',
+  API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
   MODEL: 'gpt-4o', // Best model for comprehensive content generation
   MAX_TOKENS: 4000, // Allows for detailed 2000+ word plans
   TEMPERATURE: 0.7, // Balanced creativity and consistency
@@ -17,19 +17,20 @@ export const OPENAI_CONFIG = {
 // Validation function to check if all required configs are set
 export const validateConfiguration = (): { isValid: boolean; missingKeys: string[] } => {
   const requiredKeys = [
-    'REACT_APP_OPENAI_API_KEY',
-    'REACT_APP_SENDGRID_API_KEY',
-    'REACT_APP_FROM_EMAIL'
+    'VITE_OPENAI_API_KEY',
+    'VITE_SENDGRID_API_KEY',
+    'VITE_FROM_EMAIL'
   ];
   
-  const missingKeys = requiredKeys.filter(key => !process.env[key]);
+  const envVars = import.meta.env;
+  const missingKeys = requiredKeys.filter(key => !envVars[key]);
   
   console.log('=== DETAILED ENVIRONMENT VARIABLE DEBUG ===');
-  console.log('process.env object keys containing REACT_APP:', Object.keys(process.env).filter(key => key.includes('REACT_APP')));
-  console.log('All process.env keys:', Object.keys(process.env));
+  console.log('import.meta.env object keys containing VITE_:', Object.keys(envVars).filter(key => key.includes('VITE_')));
+  console.log('All import.meta.env keys:', Object.keys(envVars));
   console.log('Environment variable validation:');
   requiredKeys.forEach(key => {
-    const value = process.env[key];
+    const value = envVars[key];
     console.log(`${key}:`, value ? `SET (${value.length} chars)` : 'MISSING');
     console.log(`${key} raw value:`, value);
   });
