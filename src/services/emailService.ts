@@ -134,51 +134,25 @@ Length: Approximately 2000-2500 words with detailed, actionable content.`;
 
 export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boolean> => {
   try {
-    console.log(`=== EMAIL SERVICE DEBUG START ===`);
+    console.log(`=== EMAIL SERVICE START ===`);
     console.log(`Generating and sending moving plan for ${planData.city}, ${planData.state}`);
-    console.log('Plan data received:', {
-      city: planData.city,
-      state: planData.state,
-      userEmail: planData.userEmail,
-      hasQuestionnaireData: !!planData.questionnaireData
-    });
     
-    // Run validation FIRST and log detailed results
-    console.log('About to run validateConfiguration...');
+    // Run validation and get detailed results
     const validation = validateConfiguration();
-    console.log('Validation completed:', validation);
     
-    // Log the actual config values being used
-    console.log('Current EMAIL_CONFIG at runtime:');
-    console.log('- SENDGRID_API_KEY present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
-    console.log('- SENDGRID_API_KEY type:', typeof EMAIL_CONFIG.SENDGRID_API_KEY);
-    console.log('- SENDGRID_API_KEY value preview:', EMAIL_CONFIG.SENDGRID_API_KEY ? EMAIL_CONFIG.SENDGRID_API_KEY.substring(0, 10) + '...' : 'EMPTY');
-    console.log('- FROM_EMAIL:', EMAIL_CONFIG.FROM_EMAIL);
-    console.log('- FROM_NAME:', EMAIL_CONFIG.FROM_NAME);
-    
-    console.log('Current OPENAI_CONFIG at runtime:');
-    console.log('- API_KEY present:', !!OPENAI_CONFIG.API_KEY);
-    console.log('- API_KEY type:', typeof OPENAI_CONFIG.API_KEY);
-    console.log('- API_KEY value preview:', OPENAI_CONFIG.API_KEY ? OPENAI_CONFIG.API_KEY.substring(0, 10) + '...' : 'EMPTY');
-    
-    // Check if validation failed
     if (!validation.isValid) {
-      const errorMessage = `Configuration validation failed. Missing environment variables: ${validation.missingKeys.join(', ')}. Please check your Netlify environment variables.`;
+      const errorMessage = `Environment variables not properly configured. Missing: ${validation.missingKeys.join(', ')}. Please ensure these variables are set in your Netlify environment with VITE_ prefix.`;
       console.error('VALIDATION FAILED:', errorMessage);
       throw new Error(errorMessage);
     }
     
-    // Double-check the specific keys we need
+    // Double-check the actual values
     if (!EMAIL_CONFIG.SENDGRID_API_KEY || EMAIL_CONFIG.SENDGRID_API_KEY.trim() === '') {
-      const detailsMsg = `SendGrid API key is missing or empty. Current value type: ${typeof EMAIL_CONFIG.SENDGRID_API_KEY}, length: ${EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0}`;
-      console.error('SENDGRID KEY CHECK FAILED:', detailsMsg);
-      throw new Error(`SendGrid API key is missing. Please check your VITE_SENDGRID_API_KEY environment variable in Netlify. ${detailsMsg}`);
+      throw new Error('SendGrid API key is empty. Please check your VITE_SENDGRID_API_KEY environment variable.');
     }
     
     if (!EMAIL_CONFIG.FROM_EMAIL || EMAIL_CONFIG.FROM_EMAIL.trim() === '') {
-      const detailsMsg = `From email is missing or empty. Current value: ${EMAIL_CONFIG.FROM_EMAIL}`;
-      console.error('FROM EMAIL CHECK FAILED:', detailsMsg);
-      throw new Error(`From email is missing. Please check your VITE_FROM_EMAIL environment variable in Netlify. ${detailsMsg}`);
+      throw new Error('From email is empty. Please check your VITE_FROM_EMAIL environment variable.');
     }
     
     console.log('All validations passed, proceeding with plan generation...');
@@ -206,11 +180,6 @@ export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boo
     
   } catch (error) {
     console.error('Error in sendMovingPlanEmail:', error);
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
     throw error;
   }
 };
@@ -280,13 +249,8 @@ const sendEmailViaSendGrid = async (emailData: {
   try {
     console.log('=== SENDGRID EMAIL ATTEMPT ===');
     console.log('Sending email via SendGrid to:', emailData.to);
-    console.log('Using SendGrid API key ending with:', EMAIL_CONFIG.SENDGRID_API_KEY?.slice(-4));
-    console.log('Full SendGrid API key for debugging:', EMAIL_CONFIG.SENDGRID_API_KEY);
-    console.log('Request payload being sent to SendGrid:', {
-      personalizations: [{ to: [{ email: emailData.to }], subject: emailData.subject }],
-      from: { email: EMAIL_CONFIG.FROM_EMAIL, name: EMAIL_CONFIG.FROM_NAME },
-      content_types: ['text/plain', 'text/html']
-    });
+    console.log('Using SendGrid API key present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
+    console.log('SendGrid API key length:', EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0);
     
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
@@ -319,7 +283,6 @@ const sendEmailViaSendGrid = async (emailData: {
     });
 
     console.log('SendGrid response status:', response.status);
-    console.log('SendGrid response headers:', Object.fromEntries(response.headers.entries()));
 
     if (response.ok) {
       console.log('Email sent successfully via SendGrid');
