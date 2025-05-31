@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from 'lucide-react';
-import { sendMovingPlanEmail } from '@/services/emailService';
+import { sendMovingPlanEmail } from '../services/emailService';
 import { useToast } from "@/components/ui/use-toast";
 
 interface MovingPlanDetailsProps {
@@ -42,6 +43,9 @@ const MovingPlanDetails = ({
 
     try {
       console.log('Starting moving plan generation and email process...');
+      console.log('City:', city, 'State:', state);
+      console.log('Questionnaire data:', questionnaireData);
+      console.log('Email:', email);
       
       // Call the parent's onSubmit to handle payment processing
       onSubmit(e);
@@ -63,7 +67,7 @@ const MovingPlanDetails = ({
       console.error('Error in moving plan process:', error);
       toast({
         title: "Plan Generation Error",
-        description: "There was an issue generating your moving plan. Please try again or contact support.",
+        description: `There was an issue generating your moving plan: ${error.message}. Please try again or contact support.`,
         variant: "destructive"
       });
     }

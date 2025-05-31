@@ -1,5 +1,4 @@
-
-import { EMAIL_CONFIG, OPENAI_CONFIG } from '@/config/emailConfig';
+import { EMAIL_CONFIG, OPENAI_CONFIG } from '../config/emailConfig';
 
 interface MovingPlanData {
   city: string;
@@ -10,6 +9,13 @@ interface MovingPlanData {
 
 export const generatePersonalizedPlan = async (planData: MovingPlanData): Promise<string> => {
   const { city, state, questionnaireData } = planData;
+  
+  console.log('Starting plan generation for:', city, state);
+  console.log('OpenAI API Key present:', !!OPENAI_CONFIG.API_KEY);
+  
+  if (!OPENAI_CONFIG.API_KEY) {
+    throw new Error('OpenAI API key is missing. Please check your environment variables.');
+  }
   
   const prompt = `Create a comprehensive, personalized moving plan for someone relocating to ${city}, ${state}. 
 
@@ -73,7 +79,7 @@ Make this plan highly specific to ${city}, ${state} with actual local informatio
 Length: Approximately 2000-2500 words with detailed, actionable content.`;
 
   try {
-    console.log('Generating personalized moving plan with OpenAI...');
+    console.log('Making request to OpenAI API...');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -98,14 +104,21 @@ Length: Approximately 2000-2500 words with detailed, actionable content.`;
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}. ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response received successfully');
+    
     const generatedPlan = data.choices[0]?.message?.content;
     
     if (!generatedPlan) {
+      console.error('No content in OpenAI response:', data);
       throw new Error('No content generated from OpenAI');
     }
 
@@ -121,6 +134,16 @@ Length: Approximately 2000-2500 words with detailed, actionable content.`;
 export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boolean> => {
   try {
     console.log(`Generating and sending moving plan for ${planData.city}, ${planData.state}`);
+    console.log('SendGrid API Key present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
+    console.log('From email:', EMAIL_CONFIG.FROM_EMAIL);
+    
+    if (!EMAIL_CONFIG.SENDGRID_API_KEY) {
+      throw new Error('SendGrid API key is missing. Please check your environment variables.');
+    }
+    
+    if (!EMAIL_CONFIG.FROM_EMAIL) {
+      throw new Error('From email is missing. Please check your environment variables.');
+    }
     
     // Generate the personalized plan
     const movingPlan = await generatePersonalizedPlan(planData);
@@ -212,7 +235,7 @@ const sendEmailViaSendGrid = async (emailData: {
   text: string;
 }): Promise<boolean> => {
   try {
-    console.log('Sending email via SendGrid...');
+    console.log('Sending email via SendGrid to:', emailData.to);
     
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
@@ -244,13 +267,15 @@ const sendEmailViaSendGrid = async (emailData: {
       }),
     });
 
+    console.log('SendGrid response status:', response.status);
+
     if (response.ok) {
       console.log('Email sent successfully via SendGrid');
       return true;
     } else {
       const errorText = await response.text();
       console.error('SendGrid API error:', response.status, errorText);
-      throw new Error(`SendGrid API error: ${response.status}`);
+      throw new Error(`SendGrid API error: ${response.status}. ${errorText}`);
     }
     
   } catch (error) {
