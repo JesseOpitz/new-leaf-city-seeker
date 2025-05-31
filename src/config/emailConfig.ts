@@ -24,10 +24,20 @@ export const validateConfiguration = (): { isValid: boolean; missingKeys: string
   
   const missingKeys = requiredKeys.filter(key => !process.env[key]);
   
+  console.log('=== DETAILED ENVIRONMENT VARIABLE DEBUG ===');
+  console.log('process.env object keys containing REACT_APP:', Object.keys(process.env).filter(key => key.includes('REACT_APP')));
+  console.log('All process.env keys:', Object.keys(process.env));
   console.log('Environment variable validation:');
   requiredKeys.forEach(key => {
-    console.log(`${key}:`, process.env[key] ? 'SET' : 'MISSING');
+    const value = process.env[key];
+    console.log(`${key}:`, value ? `SET (${value.length} chars)` : 'MISSING');
+    console.log(`${key} raw value:`, value);
   });
+  
+  console.log('EMAIL_CONFIG.SENDGRID_API_KEY:', EMAIL_CONFIG.SENDGRID_API_KEY);
+  console.log('EMAIL_CONFIG.FROM_EMAIL:', EMAIL_CONFIG.FROM_EMAIL);
+  console.log('OPENAI_CONFIG.API_KEY:', OPENAI_CONFIG.API_KEY);
+  console.log('=== END DEBUG ===');
   
   return {
     isValid: missingKeys.length === 0,

@@ -1,5 +1,4 @@
-
-import { EMAIL_CONFIG, OPENAI_CONFIG } from '../config/emailConfig';
+import { EMAIL_CONFIG, OPENAI_CONFIG, validateConfiguration } from '../config/emailConfig';
 
 interface MovingPlanData {
   city: string;
@@ -135,21 +134,25 @@ Length: Approximately 2000-2500 words with detailed, actionable content.`;
 
 export const sendMovingPlanEmail = async (planData: MovingPlanData): Promise<boolean> => {
   try {
+    console.log(`=== STARTING EMAIL PROCESS ===`);
     console.log(`Generating and sending moving plan for ${planData.city}, ${planData.state}`);
-    console.log('SendGrid API Key present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
-    console.log('SendGrid API Key length:', EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0);
-    console.log('From email:', EMAIL_CONFIG.FROM_EMAIL);
-    console.log('Environment check:');
-    console.log('- REACT_APP_SENDGRID_API_KEY exists:', !!process.env.REACT_APP_SENDGRID_API_KEY);
-    console.log('- REACT_APP_OPENAI_API_KEY exists:', !!process.env.REACT_APP_OPENAI_API_KEY);
-    console.log('- REACT_APP_FROM_EMAIL exists:', !!process.env.REACT_APP_FROM_EMAIL);
+    
+    // Run validation and log results
+    const validation = validateConfiguration();
+    console.log('Configuration validation result:', validation);
+    
+    console.log('EMAIL_CONFIG values:');
+    console.log('- SENDGRID_API_KEY present:', !!EMAIL_CONFIG.SENDGRID_API_KEY);
+    console.log('- SENDGRID_API_KEY length:', EMAIL_CONFIG.SENDGRID_API_KEY?.length || 0);
+    console.log('- FROM_EMAIL:', EMAIL_CONFIG.FROM_EMAIL);
+    console.log('- FROM_NAME:', EMAIL_CONFIG.FROM_NAME);
     
     if (!EMAIL_CONFIG.SENDGRID_API_KEY) {
-      throw new Error('SendGrid API key is missing. Please check your environment variables.');
+      throw new Error('SendGrid API key is missing. Please check your REACT_APP_SENDGRID_API_KEY environment variable in Netlify.');
     }
     
     if (!EMAIL_CONFIG.FROM_EMAIL) {
-      throw new Error('From email is missing. Please check your environment variables.');
+      throw new Error('From email is missing. Please check your REACT_APP_FROM_EMAIL environment variable in Netlify.');
     }
     
     // Generate the personalized plan
@@ -242,8 +245,10 @@ const sendEmailViaSendGrid = async (emailData: {
   text: string;
 }): Promise<boolean> => {
   try {
+    console.log('=== SENDGRID EMAIL ATTEMPT ===');
     console.log('Sending email via SendGrid to:', emailData.to);
     console.log('Using SendGrid API key ending with:', EMAIL_CONFIG.SENDGRID_API_KEY?.slice(-4));
+    console.log('Full SendGrid API key for debugging:', EMAIL_CONFIG.SENDGRID_API_KEY);
     console.log('Request payload being sent to SendGrid:', {
       personalizations: [{ to: [{ email: emailData.to }], subject: emailData.subject }],
       from: { email: EMAIL_CONFIG.FROM_EMAIL, name: EMAIL_CONFIG.FROM_NAME },
@@ -281,6 +286,7 @@ const sendEmailViaSendGrid = async (emailData: {
     });
 
     console.log('SendGrid response status:', response.status);
+    console.log('SendGrid response headers:', Object.fromEntries(response.headers.entries()));
 
     if (response.ok) {
       console.log('Email sent successfully via SendGrid');
