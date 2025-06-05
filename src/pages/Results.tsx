@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -69,8 +70,8 @@ const Results = () => {
     if (!results || !results.good_matches || results.good_matches.length === 0) return '';
     
     const topThreeCities = results.good_matches.slice(0, 3);
-    return `Check out my city preferences from New-Leaf.net! ${
-      topThreeCities.map((city, index) => `#${index + 1} – ${city.city}, ${city.state}`).join(' ')
+    return `Check out my city preferences from New-Leaf.net!\n\n${
+      topThreeCities.map((city, index) => `#${index + 1} – ${city.city}, ${city.state}`).join('\n')
     }`;
   };
   
@@ -174,30 +175,30 @@ const Results = () => {
                   href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                  title="Share on X"
                 >
-                  <Twitter className="mr-2 h-4 w-4" />
-                  Share on X
+                  <Twitter className="h-5 w-5" />
                 </a>
                 
                 <a
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${shareText}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
+                  className="flex items-center justify-center w-12 h-12 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
+                  title="Share on Facebook"
                 >
-                  <Facebook className="mr-2 h-4 w-4" />
-                  Share on Facebook
+                  <Facebook className="h-5 w-5" />
                 </a>
                 
                 <a
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&summary=${shareText}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors"
+                  className="flex items-center justify-center w-12 h-12 bg-blue-800 text-white rounded-full hover:bg-blue-900 transition-colors"
+                  title="Share on LinkedIn"
                 >
-                  <Linkedin className="mr-2 h-4 w-4" />
-                  Share on LinkedIn
+                  <Linkedin className="h-5 w-5" />
                 </a>
               </div>
             </div>

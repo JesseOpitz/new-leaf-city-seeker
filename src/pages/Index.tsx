@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ const Index = () => {
     setProcessingAI(true);
     
     try {
-      console.log("Starting AI description processing...");
+      console.log("Starting AI description processing...", description);
       
       // Check for API key in environment variables (Netlify)
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -71,14 +72,15 @@ const Index = () => {
               7. Density (preference from 0=rural to 8=urban)
               8. Politics (preference from 0=conservative to 8=liberal)
               
-              Return ONLY a JSON array with exactly 8 numeric values corresponding to these categories. If the description doesn't provide enough information for any category, use a default value of 4 (neutral). If the entire description is insufficient to make reasonable estimates, return a string saying "insufficient_description" instead of the array.`
+              Return ONLY a JSON array with exactly 8 numeric values corresponding to these categories. For example: [6,7,5,8,4,3,2,7]. If you cannot determine a preference for a category from the description, use 4 (neutral). Do not include any other text or explanation - just the JSON array.`
             },
             {
               role: "user",
               content: description
             }
           ],
-          temperature: 0.3,
+          temperature: 0.1,
+          max_tokens: 50,
         }),
       });
       
@@ -89,35 +91,40 @@ const Index = () => {
       
       const data = await response.json();
       console.log("OpenAI response received:", data);
-      const aiResponse = data.choices[0].message.content;
+      const aiResponse = data.choices[0].message.content.trim();
+      console.log("AI response content:", aiResponse);
       
       // Parse the AI response
       let preferences;
       try {
-        preferences = JSON.parse(aiResponse);
+        // Clean the response to ensure it's a valid JSON array
+        const cleanedResponse = aiResponse.replace(/```json|```/g, '').trim();
+        preferences = JSON.parse(cleanedResponse);
+        console.log("Parsed preferences:", preferences);
       } catch (e) {
-        // If not valid JSON, check if it's the insufficient_description message
-        if (aiResponse.includes("insufficient_description")) {
-          toast({
-            title: "Insufficient Description",
-            description: "Please provide more details about your preferences or use the questionnaire instead.",
-            variant: "destructive",
-          });
-          setProcessingAI(false);
-          return;
-        }
-        throw e;
-      }
-      
-      // If we got a valid array of preferences
-      if (Array.isArray(preferences) && preferences.length === 8) {
-        // Store the AI-generated preferences
-        setAiPreferences(preferences);
-        setProcessingAI(false);
-        setShowAIOptions(true);
-      } else {
+        console.error("Failed to parse AI response as JSON:", aiResponse);
         throw new Error("Invalid response format from AI");
       }
+      
+      // Validate the array
+      if (!Array.isArray(preferences) || preferences.length !== 8) {
+        console.error("Invalid preferences array:", preferences);
+        throw new Error("Invalid preferences array length or format");
+      }
+      
+      // Ensure all values are numbers between 0-8
+      const validPreferences = preferences.map(pref => {
+        const num = Number(pref);
+        if (isNaN(num)) return 4; // Default to neutral if not a number
+        return Math.max(0, Math.min(8, Math.round(num))); // Clamp between 0-8
+      });
+      
+      console.log("Valid AI preferences:", validPreferences);
+      
+      // Store the AI-generated preferences
+      setAiPreferences(validPreferences);
+      setProcessingAI(false);
+      setShowAIOptions(true);
       
     } catch (error) {
       console.error("Error processing AI description:", error);
