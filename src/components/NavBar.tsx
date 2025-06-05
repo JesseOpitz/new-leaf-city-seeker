@@ -45,6 +45,9 @@ const NavBar = () => {
             <Link to="/questionnaire" className="text-gray-700 hover:text-leaf-dark transition-colors">
               Questionnaire
             </Link>
+            <Link to="/inclusive-care" className="text-gray-700 hover:text-leaf-dark transition-colors">
+              Inclusive Care
+            </Link>
             <Link to="/about" className="text-gray-700 hover:text-leaf-dark transition-colors">
               About
             </Link>
@@ -68,6 +71,13 @@ const NavBar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Questionnaire
+              </Link>
+              <Link 
+                to="/inclusive-care" 
+                className="text-gray-700 hover:text-leaf-dark transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Inclusive Care
               </Link>
               <Link 
                 to="/about" 

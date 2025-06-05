@@ -9,6 +9,7 @@ import Questionnaire from "./pages/Questionnaire";
 import Results from "./pages/Results";
 import About from "./pages/About";
 import Policy from "./pages/Policy";
+import InclusiveCare from "./pages/InclusiveCare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/results" element={<Results />} />
           <Route path="/about" element={<About />} />
           <Route path="/policy" element={<Policy />} />
+          <Route path="/inclusive-care" element={<InclusiveCare />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

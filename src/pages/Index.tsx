@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -316,6 +315,21 @@ const Index = () => {
                 <p className="text-gray-600">Get city recommendations without creating an account or sharing personal data.</p>
               </div>
             </div>
+          </div>
+
+          {/* New Inclusive Care Section */}
+          <div className="mt-12 bg-orange-50 rounded-2xl p-6 md:p-8">
+            <h3 className="text-xl font-medium mb-4 text-center">Looking for inclusive support?</h3>
+            <p className="text-gray-700 text-center">
+              For more information on support for women and LGBTQ+ individuals living in states where care is less accessible, please visit our{' '}
+              <Link 
+                to="/inclusive-care" 
+                className="text-leaf-dark hover:text-leaf underline font-medium"
+              >
+                Inclusive Care Page
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </main>
