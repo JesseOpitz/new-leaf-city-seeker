@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { Copy, Facebook, Linkedin, Twitter } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import CityCard from '@/components/CityCard';
@@ -14,6 +14,7 @@ const Results = () => {
   const [loading, setLoading] = useState(true);
   const [showPlanOffer, setShowPlanOffer] = useState(false);
   const [selectedCity, setSelectedCity] = useState<{city: string, state: string} | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
   
   useEffect(() => {
     // Get results from localStorage
@@ -46,6 +47,35 @@ const Results = () => {
     setSelectedCity({ city, state });
     setShowPlanOffer(true);
   };
+  
+  const handleCopyToClipboard = async () => {
+    if (!results || !results.good_matches || results.good_matches.length === 0) return;
+    
+    const topThreeCities = results.good_matches.slice(0, 3);
+    const formattedText = `Check out my city preferences from New-Leaf.net!\n\n${
+      topThreeCities.map((city, index) => `#${index + 1} – ${city.city}, ${city.state}`).join('\n')
+    }`;
+    
+    try {
+      await navigator.clipboard.writeText(formattedText);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
+  };
+  
+  const getShareText = () => {
+    if (!results || !results.good_matches || results.good_matches.length === 0) return '';
+    
+    const topThreeCities = results.good_matches.slice(0, 3);
+    return `Check out my city preferences from New-Leaf.net! ${
+      topThreeCities.map((city, index) => `#${index + 1} – ${city.city}, ${city.state}`).join(' ')
+    }`;
+  };
+  
+  const shareUrl = 'https://new-leaf.net';
+  const shareText = encodeURIComponent(getShareText());
   
   // If no results and done loading, redirect to questionnaire
   useEffect(() => {
@@ -113,6 +143,63 @@ const Results = () => {
                   />
                 );
               })}
+            </div>
+          </div>
+          
+          {/* Share Results Section */}
+          <div className="mb-12 animate-fade-in">
+            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+              <h2 className="text-2xl font-semibold mb-6 text-leaf-dark">
+                Share Your Results
+              </h2>
+              
+              <div className="mb-6">
+                <Button 
+                  onClick={handleCopyToClipboard}
+                  className="leaf-bg-gradient hover:opacity-90 mb-4"
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  {copySuccess ? 'Copied to clipboard!' : 'Copy to Clipboard'}
+                </Button>
+                
+                {copySuccess && (
+                  <p className="text-green-600 text-sm animate-fade-in">
+                    Copied to clipboard!
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex justify-center space-x-4">
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(shareUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Twitter className="mr-2 h-4 w-4" />
+                  Share on X
+                </a>
+                
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${shareText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
+                >
+                  <Facebook className="mr-2 h-4 w-4" />
+                  Share on Facebook
+                </a>
+                
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&summary=${shareText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors"
+                >
+                  <Linkedin className="mr-2 h-4 w-4" />
+                  Share on LinkedIn
+                </a>
+              </div>
             </div>
           </div>
           
