@@ -101,7 +101,7 @@ const generatePDF = async (htmlContent, filename) => {
       </head>
       <body>
         <div class="header-logo">
-          <img src="https://raw.githubusercontent.com/your-username/your-repo/main/assets/logo.png" alt="New Leaf Logo" style="max-height: 80px; display: block; margin: 0 auto 20px;" />
+          <img src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/public/logo.png" alt="New Leaf Logo" style="max-height: 80px; display: block; margin: 0 auto 20px;" />
         </div>
         ${htmlContent}
         <div class="footer">
