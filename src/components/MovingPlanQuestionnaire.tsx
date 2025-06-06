@@ -18,7 +18,6 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
       budget: "",
       household: "",
       income: "",
-      housingPreference: "",
       moveReason: "",
     }
   });
