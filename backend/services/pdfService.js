@@ -1,31 +1,24 @@
-
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs').promises;
 
 const generatePDF = async (htmlContent, filename) => {
   let browser;
-  
+
   try {
     console.log('📄 Starting PDF generation...');
-    
-    // Launch Puppeteer with production-friendly options
+
+    // Launch puppeteer with @sparticuz/chromium
     browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
-    
+
     // Create styled HTML document
     const styledHTML = `
     <!DOCTYPE html>
@@ -126,7 +119,7 @@ const generatePDF = async (htmlContent, filename) => {
     `;
 
     await page.setContent(styledHTML, { waitUntil: 'networkidle0' });
-    
+
     // Generate PDF with optimized settings
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -143,7 +136,7 @@ const generatePDF = async (htmlContent, filename) => {
     // Save PDF to temp directory
     const pdfPath = path.join(__dirname, '..', 'temp', filename);
     await fs.writeFile(pdfPath, pdfBuffer);
-    
+
     // Also save to downloads directory for direct access
     const downloadPath = path.join(__dirname, '..', 'downloads', filename);
     await fs.writeFile(downloadPath, pdfBuffer);
