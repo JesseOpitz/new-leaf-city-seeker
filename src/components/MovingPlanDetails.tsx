@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from 'lucide-react';
-import { sendMovingPlanEmail } from '../services/emailService';
 import { useToast } from "@/components/ui/use-toast";
 
 interface MovingPlanDetailsProps {
@@ -42,31 +41,49 @@ const MovingPlanDetails = ({
     }
 
     try {
-      console.log('Starting moving plan generation and email process...');
-      console.log('City:', city, 'State:', state);
-      console.log('Questionnaire data:', questionnaireData);
-      console.log('Email:', email);
+      console.log('🚀 Starting backend API call to generate moving plan...');
+      console.log('📍 City:', city, 'State:', state);
+      console.log('📋 Questionnaire data:', questionnaireData);
+      console.log('📧 Email:', email);
       
-      // Generate and send the moving plan FIRST
-      console.log('About to call sendMovingPlanEmail...');
-      await sendMovingPlanEmail({
-        city,
-        state,
-        questionnaireData,
-        userEmail: email
+      // Call the backend API
+      const backendUrl = 'https://new-leaf-net.onrender.com/api/generate-plan';
+      console.log('🌐 Backend URL:', backendUrl);
+      
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          city: `${city}, ${state}`,
+          email: email,
+          questionnaire: questionnaireData
+        })
       });
       
-      console.log('Moving plan email sent successfully, now calling parent onSubmit...');
-      // Call the parent's onSubmit to handle payment processing AFTER email is sent
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const responseData = await response.json();
+      console.log('📨 Response data:', responseData);
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      console.log('✅ Backend API call successful!');
+      
+      // Call the parent's onSubmit to handle payment processing
       onSubmit(e);
       
       toast({
         title: "Success!",
-        description: `Your personalized moving plan for ${city}, ${state} has been generated and sent to ${email}. Please check your inbox (including spam folder) within the next few minutes.`,
+        description: responseData.message || `Your personalized moving plan for ${city}, ${state} has been generated and sent to ${email}.`,
       });
       
     } catch (error) {
-      console.error('Error in moving plan process:', error);
+      console.error('❌ Error calling backend API:', error);
       toast({
         title: "Plan Generation Error",
         description: `There was an issue generating your moving plan: ${error.message}. Please try again or contact support.`,
