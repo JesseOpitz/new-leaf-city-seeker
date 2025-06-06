@@ -172,7 +172,7 @@ const Results = () => {
               
               <div className="flex justify-center space-x-4">
                 <a
-                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(shareUrl)}`}
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(getShareText() + '\n\n' + shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
@@ -182,7 +182,7 @@ const Results = () => {
                 </a>
                 
                 <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${shareText}`}
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-12 h-12 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
