@@ -40,6 +40,7 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Financial preparations based on their income and budget
    - Important documents and records to gather
    - Tasks to complete before leaving their current location
+   - Come up with 20 check list items at a minimum, make this page beaituful and print ready with check boxes and a border. Make it feel personal.
 
 3. **Cost Breakdown for ${city}**
    - Housing costs (rent/mortgage) relevant to their budget
@@ -49,6 +50,7 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Utilities and internet
    - Entertainment and miscellaneous expenses
    - Emergency fund recommendations
+   - Format this page as a table, include total estimate at the bottom.
 
 4. **30-60-90 Day Action Plan**
    - 30 days before: Critical preparations
@@ -63,11 +65,13 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Schools (if applicable for their household)
    - Community groups and networking opportunities
    - LGBTQ+ and women's resources (if available)
+   - Where possible provide links to each of these services. format this section as a table also
 
 6. **Satisfaction Guarantee**
    - Add a final section at the very bottom of the document.
    - Title it "Our Satisfaction Guarantee"
-   - Use this message: We’re confident you’ll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we’ll make it right — or refund you.
+   - Sits within a neatly formatted light green box centered on the page. ensure formatting is even.
+   - Use this message: We’re confident you’ll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we’ll make it right, or refund you.
 
 
 - Proper headings (h1, h2, h3)
@@ -77,6 +81,8 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
 - Remove any Markdown formatting like (triple backticks)html
 - Avoid wrapping the entire HTML with any extra code block markers
 - Maintain a warm, practical, and encouraging tone
+- if a page is very bare, such as overflow from the previous page please do your best to even out the pages
+- professional finish product. this is prlvided to customers so should be as clean as possible
 
 The tone should be encouraging, practical, and personalized to their specific situation.
 
