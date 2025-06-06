@@ -111,7 +111,7 @@ const generatePDF = async (htmlContent, filename) => {
     browser = await chromium.launch({
       args: chromiumBundle.args,
       executablePath: await chromiumBundle.executablePath(),
-      headless: chromiumBundle.headless,
+      headless: chromiumBundle.headless === true,
     });
 
     console.log('📄 Browser launched');
