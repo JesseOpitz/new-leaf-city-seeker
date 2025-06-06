@@ -33,7 +33,9 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Discuss the city's culture, climate, and lifestyle
    - Provide high-level guidance for their timeline and budget
 
-2. **Pre-Move Checklist**
+2. **Pre-Move Checklist** (place this section on its own PDF page)
+   - Render each checklist item as a separate row with an empty checkbox (use: ☐)
+   - Use <div class="checklist-page-break"> to signal that this section should start on a new PDF page
    - Items specific to their household size and timeline
    - Financial preparations based on their income and budget
    - Important documents and records to gather
@@ -62,6 +64,11 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Community groups and networking opportunities
    - LGBTQ+ and women's resources (if available)
 
+6. **Satisfaction Guarantee**
+   - Add a final section at the very bottom of the document.
+   - Title it "Our Satisfaction Guarantee"
+   - Use this message: We’re confident you’ll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we’ll make it right — or refund you.
+
 Format the response as semantic HTML with:
 - Proper headings (h1, h2, h3)
 - Organized lists and paragraphs
@@ -70,6 +77,8 @@ Format the response as semantic HTML with:
 - Specific, actionable advice
 
 The tone should be encouraging, practical, and personalized to their specific situation.
+
+Important: DO NOT include markdown-style code blocks like \`\`\`html or \`\`\`. Only return raw HTML content without any wrapping syntax.
 `;
 
     console.log('🤖 Prompt length:', prompt.length);
