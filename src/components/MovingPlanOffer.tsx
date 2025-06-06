@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { X, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
-import { Check } from 'lucide-react';
 import MovingPlanQuestionnaire from './MovingPlanQuestionnaire';
 import MovingPlanDetails from './MovingPlanDetails';
+import { generateMovingPlan, checkBackendHealth, PlanGenerationRequest } from '@/services/planGeneratorService';
 
 interface MovingPlanOfferProps {
   city: string;
@@ -14,120 +14,249 @@ interface MovingPlanOfferProps {
 }
 
 const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
+  const [step, setStep] = useState<'offer' | 'questionnaire' | 'generating' | 'success' | 'error'>('offer');
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string>('');
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState<'intro' | 'questionnaire' | 'details'>('intro');
-  const [questionnaireData, setQuestionnaireData] = useState<any>(null);
 
-  const handleStartQuestionnaire = () => {
+  const fullCityName = `${city}, ${state}`;
+
+  const handleStartQuestionnaire = async () => {
+    // First check if backend is healthy
+    console.log('🔍 Checking backend connectivity before starting...');
+    
+    try {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        toast({
+          title: "Connection Issue",
+          description: "Unable to connect to our servers. Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+      console.log('✅ Backend health check passed');
+    } catch (error) {
+      console.error('❌ Backend health check failed:', error);
+      toast({
+        title: "Connection Error",
+        description: "Please check your internet connection and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setStep('questionnaire');
   };
 
-  const handleQuestionnaireComplete = (data: any) => {
-    setQuestionnaireData(data);
-    setStep('details');
-  };
+  const handleQuestionnaireSubmit = async (data: {
+    email?: string;
+    movingDate: string;
+    budget: string;
+    householdSize: number;
+    income: string;
+    reason: string;
+  }) => {
+    console.log('📝 Form submitted with data:', data);
+    setStep('generating');
+    setError('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      const request: PlanGenerationRequest = {
+        city: fullCityName,
+        email: data.email,
+        questionnaire: {
+          movingDate: data.movingDate,
+          budget: data.budget,
+          householdSize: data.householdSize,
+          income: data.income,
+          reason: data.reason,
+        }
+      };
+
+      console.log('🚀 Submitting plan generation request...');
+      const response = await generateMovingPlan(request);
+      
+      console.log('✅ Plan generation successful:', response);
+      setResult(response);
+      setStep('success');
+
       toast({
-        title: "Payment Successful!",
-        description: `Your personalized moving plan for ${city}, ${state} will be sent to ${email} within 24 hours.`,
+        title: "Success!",
+        description: response.message,
       });
-      onClose();
-    }, 1500);
+
+    } catch (error) {
+      console.error('❌ Plan generation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      setStep('error');
+
+      toast({
+        title: "Generation Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="bg-leaf-dark p-4 text-white">
-          <h2 className="text-xl font-semibold">Personalized Moving Plan</h2>
-          <p>For {city}, {state}</p>
-        </div>
-        
-        {step === 'intro' && (
-          <div className="p-6 overflow-y-auto">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">What You'll Get:</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Customized moving checklist tailored to {city}</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Budget planning guide with local cost estimates</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Local neighborhood recommendations based on your preferences</span>
-                </li>
-                <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Essential local resources and contacts</span>
-                </li>
+  const handleRetry = () => {
+    setStep('questionnaire');
+    setError('');
+    setResult(null);
+  };
+
+  const handleDownload = () => {
+    if (result?.downloadUrl) {
+      const fullUrl = result.downloadUrl.startsWith('http') 
+        ? result.downloadUrl 
+        : `https://new-leaf-net.onrender.com${result.downloadUrl}`;
+      
+      console.log('📥 Opening download URL:', fullUrl);
+      window.open(fullUrl, '_blank');
+    }
+  };
+
+  const renderContent = () => {
+    switch (step) {
+      case 'offer':
+        return (
+          <div className="text-center space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">Get Your Personalized Moving Plan</h3>
+              <p className="text-muted-foreground">
+                Get a detailed, AI-generated moving plan specifically tailored for your move to {fullCityName}
+              </p>
+            </div>
+            
+            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+              <h4 className="font-medium">Your plan will include:</h4>
+              <ul className="text-sm text-left space-y-1 text-muted-foreground">
+                <li>• Personalized overview for {fullCityName}</li>
+                <li>• Pre-move checklist based on your timeline</li>
+                <li>• Cost breakdown for your budget</li>
+                <li>• 30-60-90 day action plan</li>
+                <li>• Local resources and helpful contacts</li>
               </ul>
             </div>
             
-            <div className="text-center mb-6">
-              <p className="text-2xl font-bold text-leaf-dark">$5.99</p>
-              <p className="text-sm text-gray-500">One-time payment</p>
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
+            <div className="flex gap-3">
               <Button 
                 onClick={handleStartQuestionnaire} 
-                className="bg-leaf hover:bg-leaf-dark"
+                className="flex-1 leaf-bg-gradient hover:opacity-90"
               >
-                Personalize
+                Get My Plan
+              </Button>
+              <Button variant="outline" onClick={onClose}>
+                Maybe Later
               </Button>
             </div>
-
-            <p className="text-xs text-gray-500 mt-4 text-center">
-              We don't store any personal data from the questionnaire. Your privacy is important to us.
-            </p>
           </div>
-        )}
+        );
+
+      case 'questionnaire':
+        return (
+          <MovingPlanQuestionnaire 
+            city={fullCityName}
+            onSubmit={handleQuestionnaireSubmit}
+            onBack={() => setStep('offer')}
+          />
+        );
+
+      case 'generating':
+        return (
+          <div className="text-center space-y-6 py-8">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-leaf"></div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">Creating Your Moving Plan</h3>
+              <p className="text-muted-foreground">
+                Our AI is generating a personalized moving plan for {fullCityName}...
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This usually takes 30-60 seconds
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'success':
+        return (
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">Your Plan is Ready!</h3>
+              <p className="text-muted-foreground">
+                {result?.message || `Your personalized moving plan for ${fullCityName} has been generated.`}
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              {result?.downloadUrl && (
+                <Button 
+                  onClick={handleDownload}
+                  className="w-full leaf-bg-gradient hover:opacity-90"
+                >
+                  Download Your Plan
+                </Button>
+              )}
+              <Button variant="outline" onClick={onClose} className="w-full">
+                Close
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'error':
+        return (
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <AlertCircle className="h-16 w-16 text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">Something Went Wrong</h3>
+              <p className="text-muted-foreground">
+                {error || 'We encountered an error while generating your moving plan.'}
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button onClick={handleRetry} className="flex-1 leaf-bg-gradient hover:opacity-90">
+                Try Again
+              </Button>
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Moving Plan for {fullCityName}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </DialogHeader>
         
-        {step === 'questionnaire' && (
-          <div className="overflow-y-auto flex-1">
-            <MovingPlanQuestionnaire 
-              onComplete={handleQuestionnaireComplete}
-              onCancel={onClose}
-            />
-          </div>
-        )}
-
-        {step === 'details' && (
-          <div className="overflow-y-auto flex-1">
-            <MovingPlanDetails
-              city={city}
-              state={state}
-              questionnaireData={questionnaireData}
-              onSubmit={handleSubmit}
-              email={email}
-              setEmail={setEmail}
-              isProcessing={isProcessing}
-              onCancel={onClose}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+        {renderContent()}
+      </DialogContent>
+    </Dialog>
   );
 };
 
