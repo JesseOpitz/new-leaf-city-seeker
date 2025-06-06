@@ -3,6 +3,11 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 
 const createTransporter = () => {
+  console.log('📧 Creating email transporter...');
+  console.log('📧 Email user present:', !!process.env.EMAIL_USER);
+  console.log('📧 Email pass present:', !!process.env.EMAIL_PASS);
+  console.log('📧 Email user value:', process.env.EMAIL_USER);
+  
   return nodemailer.createTransporter({
     service: 'gmail',
     auth: {
@@ -15,17 +20,26 @@ const createTransporter = () => {
 
 const sendEmail = async (recipientEmail, city, pdfPath) => {
   try {
-    console.log('📧 Preparing to send email...');
+    console.log('📧 =========================');
+    console.log('📧 EMAIL SERVICE START');
+    console.log('📧 =========================');
+    console.log('📧 Recipient:', recipientEmail);
+    console.log('📧 City:', city);
+    console.log('📧 PDF path:', pdfPath);
     
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('❌ Email credentials missing!');
+      console.error('❌ EMAIL_USER:', !!process.env.EMAIL_USER);
+      console.error('❌ EMAIL_PASS:', !!process.env.EMAIL_PASS);
       throw new Error('Email credentials not configured');
     }
 
     const transporter = createTransporter();
     
     // Verify transporter configuration
+    console.log('📧 Verifying email transporter...');
     await transporter.verify();
-    console.log('✅ Email transporter verified');
+    console.log('✅ Email transporter verified successfully');
 
     const mailOptions = {
       from: `"New Leaf" <${process.env.EMAIL_USER}>`,
@@ -83,13 +97,34 @@ const sendEmail = async (recipientEmail, city, pdfPath) => {
       ]
     };
 
+    console.log('📧 Mail options configured:');
+    console.log('📧 - From:', mailOptions.from);
+    console.log('📧 - To:', mailOptions.to);
+    console.log('📧 - Subject:', mailOptions.subject);
+    console.log('📧 - Attachment path:', pdfPath);
+    console.log('📧 - Attachment filename:', path.basename(pdfPath));
+
+    console.log('📧 Sending email...');
     const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', result.messageId);
+    
+    console.log('✅ Email sent successfully!');
+    console.log('✅ Message ID:', result.messageId);
+    console.log('✅ Response:', result.response);
+    console.log('📧 =========================');
+    console.log('📧 EMAIL SERVICE END');
+    console.log('📧 =========================');
     
     return result;
 
   } catch (error) {
-    console.error('❌ Email service error:', error);
+    console.error('❌ =========================');
+    console.error('❌ EMAIL SERVICE ERROR');
+    console.error('❌ =========================');
+    console.error('❌ Error type:', error.constructor.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error code:', error.code);
+    console.error('❌ Error response:', error.response);
+    console.error('❌ Full error:', error);
     throw new Error(`Email delivery failed: ${error.message}`);
   }
 };

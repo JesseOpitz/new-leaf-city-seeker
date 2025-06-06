@@ -7,7 +7,13 @@ const openai = new OpenAI({
 
 const generateMovingPlan = async (city, questionnaire) => {
   try {
-    console.log('🤖 Calling OpenAI API...');
+    console.log('🤖 =========================');
+    console.log('🤖 OPENAI SERVICE START');
+    console.log('🤖 =========================');
+    console.log('🤖 OpenAI API Key present:', !!process.env.BACKEND_OPENAI_API_KEY);
+    console.log('🤖 OpenAI API Key length:', process.env.BACKEND_OPENAI_API_KEY?.length || 0);
+    console.log('🤖 City:', city);
+    console.log('🤖 Questionnaire:', JSON.stringify(questionnaire, null, 2));
     
     const prompt = `
 Create a comprehensive, personalized moving plan for someone relocating to ${city}. Use the following information about the person:
@@ -66,6 +72,9 @@ Format the response as semantic HTML with:
 The tone should be encouraging, practical, and personalized to their specific situation.
 `;
 
+    console.log('🤖 Prompt length:', prompt.length);
+    console.log('🤖 Making OpenAI API call...');
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4-1106-preview",
       messages: [
@@ -82,17 +91,37 @@ The tone should be encouraging, practical, and personalized to their specific si
       temperature: 0.7,
     });
 
-    const planHTML = completion.choices[0].message.content;
+    console.log('🤖 OpenAI API response received');
+    console.log('🤖 Response object keys:', Object.keys(completion));
+    console.log('🤖 Choices array length:', completion.choices?.length || 0);
+
+    const planHTML = completion.choices[0]?.message?.content;
+    
+    console.log('🤖 Generated content length:', planHTML?.length || 0);
+    console.log('🤖 Generated content preview (first 200 chars):', planHTML?.substring(0, 200) || 'NO CONTENT');
     
     if (!planHTML || planHTML.trim().length < 100) {
+      console.error('❌ OpenAI returned insufficient content');
+      console.error('❌ Full response:', JSON.stringify(completion, null, 2));
       throw new Error('OpenAI returned insufficient content');
     }
 
     console.log('✅ OpenAI plan generated successfully');
+    console.log('🤖 =========================');
+    console.log('🤖 OPENAI SERVICE END');
+    console.log('🤖 =========================');
+    
     return planHTML;
 
   } catch (error) {
-    console.error('❌ OpenAI service error:', error);
+    console.error('❌ =========================');
+    console.error('❌ OPENAI SERVICE ERROR');
+    console.error('❌ =========================');
+    console.error('❌ Error type:', error.constructor.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error status:', error.status);
+    console.error('❌ Error code:', error.code);
+    console.error('❌ Full error:', error);
     throw new Error(`OpenAI API error: ${error.message}`);
   }
 };
