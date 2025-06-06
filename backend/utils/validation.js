@@ -33,15 +33,14 @@ const planRequestSchema = Joi.object({
         'string.max': 'Moving date is too long'
       }),
     
-    budget: Joi.alternatives()
-      .try(
-        Joi.string().trim().min(1).max(50),
-        Joi.number().positive()
-      )
+    budget: Joi.string()
+      .trim()
+      .min(1)
+      .max(50)
       .required()
       .messages({
-        'alternatives.match': 'Budget must be a valid string or number',
-        'any.required': 'Budget is required'
+        'string.empty': 'Budget is required',
+        'string.max': 'Budget description is too long'
       }),
     
     householdSize: Joi.number()
@@ -57,15 +56,14 @@ const planRequestSchema = Joi.object({
         'any.required': 'Household size is required'
       }),
     
-    income: Joi.alternatives()
-      .try(
-        Joi.string().trim().min(1).max(50),
-        Joi.number().positive()
-      )
+    income: Joi.string()
+      .trim()
+      .min(1)
+      .max(50)
       .required()
       .messages({
-        'alternatives.match': 'Income must be a valid string or number',
-        'any.required': 'Income is required'
+        'string.empty': 'Income is required',
+        'string.max': 'Income description is too long'
       }),
     
     reason: Joi.string()

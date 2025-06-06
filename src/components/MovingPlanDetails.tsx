@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,23 +42,41 @@ const MovingPlanDetails = ({
     try {
       console.log('🚀 Starting backend API call to generate moving plan...');
       console.log('📍 City:', city, 'State:', state);
-      console.log('📋 Questionnaire data:', questionnaireData);
+      console.log('📋 Raw questionnaire data:', questionnaireData);
       console.log('📧 Email:', email);
+      
+      // Map questionnaire data to backend expected format
+      const mappedQuestionnaire = {
+        movingDate: questionnaireData?.timeline || 'not specified',
+        budget: questionnaireData?.budget || 'not specified', 
+        householdSize: questionnaireData?.household === 'just-me' ? 1 : 
+                      questionnaireData?.household === '2' ? 2 :
+                      questionnaireData?.household === '3-4' ? 3 :
+                      questionnaireData?.household === '5+' ? 5 : 1,
+        income: questionnaireData?.income || 'not specified',
+        reason: questionnaireData?.moveReason || 'not specified'
+      };
+      
+      console.log('📋 Mapped questionnaire data:', mappedQuestionnaire);
       
       // Call the backend API
       const backendUrl = 'https://new-leaf-net.onrender.com/api/generate-plan';
       console.log('🌐 Backend URL:', backendUrl);
+      
+      const requestPayload = {
+        city: `${city}, ${state}`,
+        email: email,
+        questionnaire: mappedQuestionnaire
+      };
+      
+      console.log('📤 Request payload:', JSON.stringify(requestPayload, null, 2));
       
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          city: `${city}, ${state}`,
-          email: email,
-          questionnaire: questionnaireData
-        })
+        body: JSON.stringify(requestPayload)
       });
       
       console.log('📡 Response status:', response.status);
