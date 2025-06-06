@@ -8,7 +8,7 @@ const createTransporter = () => {
   console.log('📧 Email pass present:', !!process.env.EMAIL_PASS);
   console.log('📧 Email user value:', process.env.EMAIL_USER);
   
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,
