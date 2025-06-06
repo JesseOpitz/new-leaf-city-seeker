@@ -69,12 +69,14 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Title it "Our Satisfaction Guarantee"
    - Use this message: We’re confident you’ll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we’ll make it right — or refund you.
 
-Format the response as semantic HTML with:
+
 - Proper headings (h1, h2, h3)
-- Organized lists and paragraphs
-- Basic inline CSS for readability
-- Warm, conversational tone (not robotic)
-- Specific, actionable advice
+- Organized paragraphs and lists
+- Inline CSS only where needed
+- A <div style="page-break-before: always;"></div> before each major section (starting with Checklist, Cost Breakdown, etc.) to force a new page when converted to PDF
+- Remove any Markdown formatting like (triple backticks)html
+- Avoid wrapping the entire HTML with any extra code block markers
+- Maintain a warm, practical, and encouraging tone
 
 The tone should be encouraging, practical, and personalized to their specific situation.
 
@@ -104,7 +106,9 @@ Important: DO NOT include markdown-style code blocks like \`\`\`html or \`\`\`. 
     console.log('🤖 Response object keys:', Object.keys(completion));
     console.log('🤖 Choices array length:', completion.choices?.length || 0);
 
-    const planHTML = completion.choices[0]?.message?.content;
+    let planHTML = completion.choices[0]?.message?.content || '';
+    planHTML = planHTML.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
+
     
     console.log('🤖 Generated content length:', planHTML?.length || 0);
     console.log('🤖 Generated content preview (first 200 chars):', planHTML?.substring(0, 200) || 'NO CONTENT');
