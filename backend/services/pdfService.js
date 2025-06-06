@@ -1,6 +1,5 @@
-
-const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const { chromium } = require('playwright-core');
+const chromiumBundle = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs').promises;
 
@@ -9,138 +8,118 @@ const generatePDF = async (htmlContent, filename) => {
 
   try {
     console.log('📄 Starting PDF generation...');
-    console.log('📄 HTML content length:', htmlContent?.length || 0);
-    console.log('📄 Filename:', filename);
+    if (!htmlContent || !filename) throw new Error('Missing content or filename');
 
-    // Validate inputs
-    if (!htmlContent || htmlContent.trim().length === 0) {
-      throw new Error('HTML content is empty or invalid');
-    }
-
-    if (!filename) {
-      throw new Error('Filename is required');
-    }
-
-    // Launch puppeteer with @sparticuz/chromium
-    console.log('📄 Launching browser...');
-    browser = await puppeteer.launch({
-      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      timeout: 60000, // 60 second timeout
-    });
-
-    console.log('📄 Browser launched successfully');
-    const page = await browser.newPage();
-
-    // Create styled HTML document with error handling
     const styledHTML = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Moving Plan</title>
         <style>
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 40px 20px;
-                background: #fff;
-            }
-            h1 {
-                color: #2c5530;
-                border-bottom: 3px solid #7fb069;
-                padding-bottom: 10px;
-                margin-bottom: 30px;
-                font-size: 28px;
-            }
-            h2 {
-                color: #2c5530;
-                margin-top: 35px;
-                margin-bottom: 15px;
-                font-size: 22px;
-            }
-            h3 {
-                color: #4a7c59;
-                margin-top: 25px;
-                margin-bottom: 12px;
-                font-size: 18px;
-            }
-            p {
-                margin-bottom: 15px;
-                text-align: justify;
-            }
-            ul, ol {
-                margin-bottom: 20px;
-                padding-left: 25px;
-            }
-            li {
-                margin-bottom: 8px;
-            }
-            .header {
-                text-align: center;
-                margin-bottom: 40px;
-                padding: 20px;
-                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                border-radius: 10px;
-            }
-            .section {
-                margin-bottom: 35px;
-                padding: 20px;
-                border-left: 4px solid #7fb069;
-                background: #f8f9fa;
-                border-radius: 0 8px 8px 0;
-            }
-            .cost-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 8px 0;
-                border-bottom: 1px solid #dee2e6;
-            }
-            .timeline-item {
-                margin-bottom: 15px;
-                padding: 10px;
-                background: #fff;
-                border-radius: 5px;
-                border-left: 3px solid #7fb069;
-            }
-            .resource-link {
-                color: #2c5530;
-                text-decoration: none;
-                font-weight: 500;
-            }
-            .footer {
-                margin-top: 50px;
-                text-align: center;
-                font-size: 14px;
-                color: #6c757d;
-                border-top: 1px solid #dee2e6;
-                padding-top: 20px;
-            }
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+          }
+          h1 {
+            color: #2c5530;
+            border-bottom: 3px solid #7fb069;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 28px;
+          }
+          h2 {
+            color: #2c5530;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-size: 22px;
+          }
+          h3 {
+            color: #4a7c59;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-size: 18px;
+          }
+          p {
+            margin-bottom: 15px;
+            text-align: justify;
+          }
+          ul, ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+          }
+          li {
+            margin-bottom: 8px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+          }
+          .section {
+            margin-bottom: 35px;
+            padding: 20px;
+            border-left: 4px solid #7fb069;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+          }
+          .cost-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+          }
+          .timeline-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            border-left: 3px solid #7fb069;
+          }
+          .resource-link {
+            color: #2c5530;
+            text-decoration: none;
+            font-weight: 500;
+          }
+          .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+          }
         </style>
-    </head>
-    <body>
+      </head>
+      <body>
         ${htmlContent}
         <div class="footer">
-            <p>Generated by New Leaf • Visit us at new-leaf.net</p>
+          <p>Generated by New Leaf • Visit us at new-leaf.net</p>
         </div>
-    </body>
-    </html>
+      </body>
+      </html>
     `;
 
-    console.log('📄 Setting page content...');
-    await page.setContent(styledHTML, { 
-      waitUntil: 'networkidle0', 
-      timeout: 30000 
+    browser = await chromium.launch({
+      args: chromiumBundle.args,
+      executablePath: await chromiumBundle.executablePath(),
+      headless: chromiumBundle.headless,
     });
 
-    console.log('📄 Generating PDF...');
-    // Generate PDF with optimized settings
+    console.log('📄 Browser launched');
+    const page = await browser.newPage();
+
+    await page.setContent(styledHTML, { waitUntil: 'networkidle' });
+    console.log('📄 Page content set');
+
     const pdfBuffer = await page.pdf({
       format: 'A4',
       margin: {
@@ -150,56 +129,33 @@ const generatePDF = async (htmlContent, filename) => {
         left: '15mm'
       },
       printBackground: true,
-      preferCSSPageSize: true,
-      timeout: 30000
+      preferCSSPageSize: true
     });
 
-    console.log('📄 PDF buffer generated, size:', pdfBuffer.length);
+    console.log('📄 PDF buffer created');
 
-    // Ensure directories exist
     const tempDir = path.join(__dirname, '..', 'temp');
     const downloadDir = path.join(__dirname, '..', 'downloads');
-    
+
     await fs.mkdir(tempDir, { recursive: true });
     await fs.mkdir(downloadDir, { recursive: true });
 
-    // Save PDF to temp directory
-    const pdfPath = path.join(tempDir, filename);
-    await fs.writeFile(pdfPath, pdfBuffer);
-    console.log('📄 PDF saved to temp:', pdfPath);
-
-    // Also save to downloads directory for direct access
+    const tempPath = path.join(tempDir, filename);
     const downloadPath = path.join(downloadDir, filename);
+
+    await fs.writeFile(tempPath, pdfBuffer);
     await fs.writeFile(downloadPath, pdfBuffer);
-    console.log('📄 PDF saved to downloads:', downloadPath);
 
-    console.log('✅ PDF generated successfully');
-    return pdfPath;
+    console.log('✅ PDF saved to:', tempPath);
+    return tempPath;
 
-  } catch (error) {
-    console.error('❌ PDF generation error details:');
-    console.error('❌ Error type:', error.constructor.name);
-    console.error('❌ Error message:', error.message);
-    console.error('❌ Error stack:', error.stack);
-    
-    // More specific error handling
-    if (error.message.includes('timeout')) {
-      throw new Error('PDF generation timed out - content may be too large or complex');
-    } else if (error.message.includes('Navigation')) {
-      throw new Error('PDF generation failed during page navigation');
-    } else if (error.message.includes('Protocol error')) {
-      throw new Error('Browser communication error during PDF generation');
-    } else {
-      throw new Error(`PDF generation failed: ${error.message}`);
-    }
+  } catch (err) {
+    console.error('❌ PDF generation error:', err.message);
+    throw err;
   } finally {
     if (browser) {
-      try {
-        await browser.close();
-        console.log('📄 Browser closed successfully');
-      } catch (closeError) {
-        console.error('❌ Error closing browser:', closeError);
-      }
+      await browser.close();
+      console.log('📄 Browser closed');
     }
   }
 };
