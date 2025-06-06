@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -22,15 +21,14 @@ console.log('🚀 Port:', PORT);
 console.log('🚀 OpenAI API Key present:', !!process.env.BACKEND_OPENAI_API_KEY);
 console.log('🚀 Email user present:', !!process.env.EMAIL_USER);
 console.log('🚀 Email pass present:', !!process.env.EMAIL_PASS);
-console.log('🚀 Allowed origin:', process.env.ALLOWED_ORIGIN || 'https://new-leaf.net');
 
 // Security middleware
 app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX) || 10, // limit each IP to requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX) || 10,
   message: { error: 'Too many requests, please try again later.' },
   handler: (req, res) => {
     console.log('⚠️ Rate limit exceeded for IP:', req.ip);
@@ -39,19 +37,31 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS configuration
+// ✅ Updated CORS configuration
+const allowedOrigins = [
+  'https://new-leaf.net',
+  'http://localhost:3000'
+];
+
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGIN || 'https://new-leaf.net',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`⛔ CORS blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 
-// Body parsing middleware
+// Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Request logging middleware
+// Request logger
 app.use((req, res, next) => {
   console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.path} from ${req.ip}`);
   console.log(`📥 Headers:`, req.headers);
@@ -61,7 +71,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Create temp and downloads directories if they don't exist
+// Init temp and downloads folders
 const initDirectories = async () => {
   try {
     await fs.mkdir(path.join(__dirname, 'temp'), { recursive: true });
@@ -72,7 +82,7 @@ const initDirectories = async () => {
   }
 };
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   console.log('💓 Health check requested');
   res.status(200).json({
@@ -83,10 +93,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Serve static files from downloads directory
+// Serve PDFs
 app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 
-// Routes
+// API routes
 app.use('/api', planGeneratorRoutes);
 
 // 404 handler
@@ -105,30 +115,28 @@ app.use((error, req, res, next) => {
   console.error('❌ Error stack:', error.stack);
   console.error('❌ Request path:', req.path);
   console.error('❌ Request method:', req.method);
-  
+
   if (error.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Invalid JSON payload' });
   }
-  
-  res.status(500).json({ 
+
+  res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
   });
 });
 
-// Start server and initialize cleanup
+// Start server
 const startServer = async () => {
   try {
     await initDirectories();
-    
-    // Start file cleanup job (runs every 30 minutes)
     cleanupOldFiles();
     console.log('✅ File cleanup job started');
-    
+
     app.listen(PORT, () => {
       console.log('🚀 =========================');
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌍 CORS enabled for: ${corsOptions.origin}`);
+      console.log(`🌍 CORS enabled for: ${allowedOrigins.join(', ')}`);
       console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log('🚀 Server ready to accept requests');
       console.log('🚀 =========================');
