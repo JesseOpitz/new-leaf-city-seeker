@@ -296,18 +296,6 @@ const Questionnaire = () => {
                       onCheckedChange={setShowBadMatches} 
                     />
                   </div>
-
-                  {!dataLoaded && !dataError && (
-                    <div className="text-amber-600 text-sm mt-4 p-2 bg-amber-50 border border-amber-200 rounded">
-                      Loading city data from GitHub...
-                    </div>
-                  )}
-
-                  {dataLoaded && (
-                    <div className="text-green-600 text-sm mt-4 p-2 bg-green-50 border border-green-200 rounded">
-                      ✓ City data loaded successfully ({cityData.length} cities)
-                    </div>
-                  )}
                 </div>
               )}
             </CardContent>
