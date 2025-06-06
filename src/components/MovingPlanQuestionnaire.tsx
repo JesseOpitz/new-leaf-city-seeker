@@ -246,55 +246,6 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
               )}
             />
 
-            {/* Housing Preference Question */}
-            <FormField
-              control={form.control}
-              name="housingPreference"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>What type of housing are you looking for?</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="apartment" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Apartment/Condo</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="townhouse" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Townhouse</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="single-family" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Single-family home</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="not-sure" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Not sure yet</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
             {/* Move Reason Question */}
             <FormField
               control={form.control}
