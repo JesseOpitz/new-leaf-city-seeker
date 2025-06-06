@@ -7,11 +7,19 @@ import { useForm } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MovingPlanQuestionnaireProps {
-  onComplete: (data: any) => void;
-  onCancel: () => void;
+  city: string;
+  onSubmit: (data: {
+    email?: string;
+    movingDate: string;
+    budget: string;
+    householdSize: number;
+    income: string;
+    reason: string;
+  }) => void;
+  onBack: () => void;
 }
 
-const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnaireProps) => {
+const MovingPlanQuestionnaire = ({ city, onSubmit, onBack }: MovingPlanQuestionnaireProps) => {
   const form = useForm({
     defaultValues: {
       timeline: "",
@@ -24,12 +32,23 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
   });
 
   const handleSubmit = (data: any) => {
-    onComplete(data);
+    // Map the form data to the expected format
+    const mappedData = {
+      movingDate: data.timeline,
+      budget: data.budget,
+      householdSize: data.household === 'just-me' ? 1 : 
+                     data.household === '2' ? 2 :
+                     data.household === '3-4' ? 3 :
+                     data.household === '5+' ? 5 : 1,
+      income: data.income,
+      reason: data.moveReason,
+    };
+    onSubmit(mappedData);
   };
 
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan</h3>
+      <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan for {city}</h3>
       <p className="text-sm text-gray-500 mb-4">
         This information helps us create a tailored plan. We don't store this data.
         Feel free to select "Prefer not to say" for any question.
@@ -360,9 +379,9 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={onCancel}
+                onClick={onBack}
               >
-                Cancel
+                Back
               </Button>
               <Button 
                 type="submit" 
