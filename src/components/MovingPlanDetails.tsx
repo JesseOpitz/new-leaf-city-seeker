@@ -125,21 +125,7 @@ const MovingPlanDetails = ({
         return 'Customizable budget planning with scalable options';
     }
   };
-
-  // Determine housing description based on questionnaire data
-  const getHousingDescription = () => {
-    switch(questionnaireData?.housingPreference) {
-      case 'apartment':
-        return 'Apartment/condo hunting guide with rental market insights';
-      case 'townhouse':
-        return 'Townhouse selection criteria and community evaluations';
-      case 'single-family':
-        return 'Single-family home buying guidance and neighborhood analysis';
-      default:
-        return 'Comprehensive housing options overview with comparison tools';
-    }
-  };
-
+  
   return (
     <div className="p-6">
       <h3 className="text-xl font-semibold mb-4 text-leaf-dark">Your Personalized Moving Plan</h3>
