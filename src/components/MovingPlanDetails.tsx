@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from 'lucide-react';
@@ -26,6 +26,8 @@ const MovingPlanDetails = ({
   onCancel
 }: MovingPlanDetailsProps) => {
   const { toast } = useToast();
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +36,15 @@ const MovingPlanDetails = ({
       toast({
         title: "Email Required",
         description: "Please enter your email address to receive the moving plan.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (email !== confirmEmail) {
+      toast({
+        title: "Email Mismatch",
+        description: "Please make sure both email addresses match.",
         variant: "destructive"
       });
       return;
@@ -91,13 +102,11 @@ const MovingPlanDetails = ({
       
       console.log('✅ Backend API call successful!');
       
+      // Show success popup
+      setShowSuccessPopup(true);
+      
       // Call the parent's onSubmit to handle payment processing
       onSubmit(e);
-      
-      toast({
-        title: "Success!",
-        description: responseData.message || `Your personalized moving plan for ${city}, ${state} has been generated and sent to ${email}.`,
-      });
       
     } catch (error) {
       console.error('❌ Error calling backend API:', error);
@@ -143,6 +152,24 @@ const MovingPlanDetails = ({
     }
   };
   
+  if (showSuccessPopup) {
+    return (
+      <div className="p-6 text-center">
+        <div className="mb-6">
+          <h3 className="text-2xl font-bold text-leaf-dark mb-4">Congratulations!</h3>
+          <p className="text-lg mb-2">Your Moving Plan is Being Generated and Sent to</p>
+          <p className="text-lg font-medium text-leaf-dark mb-4">{email}</p>
+          <p className="text-sm text-gray-600">
+            Please allow up to 15 minutes for the plan to be generated and sent. If you are having issues receiving your plan, please contact us at support@woridle.com
+          </p>
+        </div>
+        <Button onClick={onCancel} className="bg-leaf hover:bg-leaf-dark">
+          Close
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <h3 className="text-xl font-semibold mb-4 text-leaf-dark">Your Personalized Moving Plan</h3>
@@ -220,13 +247,28 @@ const MovingPlanDetails = ({
             required
             className="w-full"
           />
+        </div>
+
+        <div>
+          <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm Email Address
+          </label>
+          <Input
+            id="confirmEmail"
+            type="email"
+            value={confirmEmail}
+            onChange={(e) => setConfirmEmail(e.target.value)}
+            placeholder="Confirm your email address"
+            required
+            className="w-full"
+          />
           <p className="text-xs text-gray-500 mt-1">
             Your personalized moving plan will be generated and sent to this email immediately after payment.
           </p>
         </div>
         
         <div className="text-center">
-          <p className="text-2xl font-bold text-leaf-dark">$5.99</p>
+          <p className="text-2xl font-bold text-leaf-dark">$3.99</p>
           <p className="text-sm text-gray-500">One-time payment • Instant delivery</p>
         </div>
         
@@ -241,8 +283,8 @@ const MovingPlanDetails = ({
           </Button>
           <Button 
             type="submit" 
-            className="bg-leaf hover:bg-leaf-dark"
-            disabled={isProcessing || !email}
+            className="bg-leaf hover:bg-leaf-dark disabled:bg-gray-400"
+            disabled={isProcessing || !email || !confirmEmail}
           >
             {isProcessing ? "Processing..." : "Purchase Plan"}
           </Button>

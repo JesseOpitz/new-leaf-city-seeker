@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +76,7 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
             </div>
             
             <div className="text-center mb-6">
-              <p className="text-2xl font-bold text-leaf-dark">$5.99</p>
+              <p className="text-2xl font-bold text-leaf-dark">$3.99</p>
               <p className="text-sm text-gray-500">One-time payment</p>
             </div>
             

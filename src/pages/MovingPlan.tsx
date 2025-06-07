@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,8 +114,8 @@ const MovingPlan = () => {
           {/* Price Section */}
           <div className="text-center mb-8">
             <div className="bg-leaf-light rounded-lg p-8 mb-8">
-              <h2 className="text-3xl font-bold text-leaf-dark mb-2">Only $5.99</h2>
-              <p className="text-gray-600">One-time payment • Delivered within 24 hours</p>
+              <h2 className="text-3xl font-bold text-leaf-dark mb-2">Only $3.99</h2>
+              <p className="text-gray-600">One-time payment • Delivered instantly</p>
             </div>
           </div>
 
