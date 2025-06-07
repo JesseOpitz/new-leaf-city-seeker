@@ -10,6 +10,7 @@ import Results from "./pages/Results";
 import About from "./pages/About";
 import Policy from "./pages/Policy";
 import InclusiveCare from "./pages/InclusiveCare";
+import MovingPlan from "./pages/MovingPlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/inclusive-care" element={<InclusiveCare />} />
+          <Route path="/moving-plan" element={<MovingPlan />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

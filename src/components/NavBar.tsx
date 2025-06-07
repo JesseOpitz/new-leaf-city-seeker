@@ -51,6 +51,9 @@ const NavBar = () => {
             <Link to="/about" className="text-gray-700 hover:text-leaf-dark transition-colors">
               About
             </Link>
+            <Link to="/moving-plan" className="text-green-500 hover:text-green-600 font-semibold transition-colors">
+              Get Moving Plan
+            </Link>
           </div>
         </div>
 
@@ -85,6 +88,13 @@ const NavBar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
+              </Link>
+              <Link 
+                to="/moving-plan" 
+                className="text-green-500 hover:text-green-600 font-semibold transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Get Moving Plan
               </Link>
             </div>
           </div>
