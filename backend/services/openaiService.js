@@ -15,89 +15,119 @@ const generateMovingPlan = async (city, questionnaire) => {
     console.log('🤖 City:', city);
     console.log('🤖 Questionnaire:', JSON.stringify(questionnaire, null, 2));
     
-    // Prepare additional info section
-    const additionalInfoSection = questionnaire.additionalInfo && questionnaire.additionalInfo.trim() 
-      ? `\n\nIMPORTANT: The user has provided additional personalization information: "${questionnaire.additionalInfo}"\n\nThis is crucial user input that should be used throughout the entire moving plan to add specific, personalized details and recommendations. Reference this information when making suggestions about neighborhoods, services, timeline adjustments, budget considerations, and any other relevant aspects of the moving plan. This user input is key for creating a truly customized experience.`
-      : '';
-
-    const prompt = `
-Create a comprehensive, personalized moving plan for someone relocating to ${city}. Use the following information about the person:
+    const prompt = `Create a comprehensive, personalized moving plan for someone relocating to ${city}. Use the following information about the person:
 
 - Moving Date: ${questionnaire.movingDate}
 - Budget: ${questionnaire.budget}
 - Household Size: ${questionnaire.householdSize} people
 - Income: ${questionnaire.income}
-- Reason for Moving: ${questionnaire.reason}${additionalInfoSection}
+- Reason for Moving: ${questionnaire.reason}
+${questionnaire.additionalInfo && questionnaire.additionalInfo.trim() 
+  ? `
+IMPORTANT: The user has provided additional personalization information:
 
-Generate a warm, helpful, and detailed moving plan formatted as clean HTML with the following sections:
+"${questionnaire.additionalInfo}"
 
-1. **Personalized Overview & Introduction** (1000 words)
-   - Welcome them personally to their journey to ${city}
-   - Explain what to expect in the city based on their specific situation
-   - Address their reason for moving and how ${city} can fulfill that
-   - Discuss the city's culture, climate, and lifestyle
-   - Provide high-level guidance for their timeline and budget
-   ${questionnaire.additionalInfo ? '- Specifically address and incorporate their additional preferences and situation details provided' : ''}
+Use this user-provided context throughout the plan to personalize details, especially around neighborhood selection, budgeting, checklist items, and resources. This input is critical for tailoring the content.`
+  : ''}
 
-2. **Pre-Move Checklist** (place this section on its own PDF page)
-   - Render each checklist item as a separate row with an empty checkbox (use: ☐)
-   - Use <div class="checklist-page-break"> to signal that this section should start on a new PDF page
-   - Items specific to their household size and timeline
-   - Financial preparations based on their income and budget
-   - Important documents and records to gather
-   - Tasks to complete before leaving their current location
-   - Come up with 20 check list items at a minimum, make this page beaituful and print ready with check boxes and a border. Make it feel personal.
-   ${questionnaire.additionalInfo ? '- Include specific checklist items based on their additional information provided' : ''}
+Generate the plan as clean, professional HTML with the following structured sections:
 
-3. **Cost Breakdown for ${city}**
-   - Housing costs (rent/mortgage) relevant to their budget
-   - Transportation expenses (car vs public transit)
-   - Healthcare and insurance considerations
-   - Food and dining costs
-   - Utilities and internet
-   - Entertainment and miscellaneous expenses
-   - Emergency fund recommendations
-   - Format this page as a table, include total estimate at the bottom.
-   ${questionnaire.additionalInfo ? '- Adjust cost considerations based on their specific needs and preferences mentioned' : ''}
+---
 
-4. **30-60-90 Day Action Plan**
-   - 30 days before: Critical preparations
-   - Move week: Step-by-step moving process
-   - 90 days after: Settling in and establishing routines
-   ${questionnaire.additionalInfo ? '- Customize timeline recommendations based on their additional information' : ''}
+1. **Personalized Overview & Introduction**  
+- A warm, welcoming opening  
+- Address their reason for moving and how ${city} supports that  
+- Highlight cultural/lifestyle factors  
+- Offer high-level budget and timeline insights  
+${questionnaire.additionalInfo ? '- Incorporate any user context provided into tone and suggestions' : ''}
 
-5. **Local Resources for ${city}**
-   - Utilities companies and setup procedures
-   - Healthcare providers and clinics
-   - Government services (DMV, voter registration, etc.)
-   - Banks and financial services
-   - Schools (if applicable for their household)
-   - Community groups and networking opportunities
-   - LGBTQ+ and women's resources (if available)
-   - Where possible provide links to each of these services. format this section as a table also
-   ${questionnaire.additionalInfo ? '- Prioritize and highlight resources that align with their specific interests and needs mentioned' : ''}
+---
 
-6. **Satisfaction Guarantee**
-   - Add a final section at the very bottom of the document.
-   - Title it "Our Satisfaction Guarantee"
-   - Sits within a neatly formatted light green box centered on the page. ensure formatting is even.
-   - Use this message: We're confident you'll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we'll make it right, or refund you.
+2. **Pre-Move Checklist** (starts on a new PDF page)  
+- Render 20+ checklist items  
+- Each item on its own row using: ☐  
+- Checklist should be inside a <div class="checklist-page-break"> wrapper  
+- Personalize based on household size, moving date, income  
+- Visually balanced and print-ready with spacing, borders, and headings  
+${questionnaire.additionalInfo ? '- Include specific checklist items based on user notes' : ''}
 
-Format requirements:
-- Proper headings (h1, h2, h3)
-- Organized paragraphs and lists
-- Inline CSS only where needed
-- A <div style="page-break-before: always;"></div> before each major section (starting with Checklist, Cost Breakdown, etc.) to force a new page when converted to PDF
-- Remove any Markdown formatting like (triple backticks)html
-- Avoid wrapping the entire HTML with any extra code block markers
-- Maintain a warm, practical, and encouraging tone
-- if a page is very bare, such as overflow from the previous page please do your best to even out the pages
-- professional finish product. this is provided to customers so should be as clean as possible
+Example checklist row:  
+<div style="margin-bottom: 8px;">☐ Book movers 2–3 weeks before your move date</div>
 
-The tone should be encouraging, practical, and personalized to their specific situation. ${questionnaire.additionalInfo ? 'Make sure to weave in their additional personal information throughout the entire document to create a truly customized experience.' : ''}
+---
 
-Important: DO NOT include markdown-style code blocks like \`\`\`html or \`\`\`. Only return raw HTML content without any wrapping syntax.
-`;
+3. **Cost Breakdown for ${city}**  
+- Table format  
+- Include: housing, transport, healthcare, food, utilities, insurance, emergency fund  
+- Add estimated monthly total at bottom  
+${questionnaire.additionalInfo ? '- Modify based on user expectations or financial context' : ''}
+
+---
+
+4. **30-60-90 Day Action Plan**  
+- 30 Days Before: Prep tasks  
+- Move Week: Key logistics  
+- First 90 Days: Settling in, connecting locally  
+- Format with clear subheadings  
+${questionnaire.additionalInfo ? '- Adjust tasks/timing based on user-provided info' : ''}
+
+---
+
+5. **Local Resources in ${city}**  
+- Table layout with: Type, Name, Website  
+- Include: utilities, DMV, schools, banks, healthcare, LGBTQ+ groups  
+- Use links when possible  
+${questionnaire.additionalInfo ? '- Prioritize any services mentioned or implied in the user context' : ''}
+
+---
+
+6. **Hiring a Moving Company**  
+- Tips for comparing moving companies  
+- How to get quotes, licenses to check, red flags  
+- How to choose between full-service, hybrid, and DIY  
+- Include a short list of example nationwide movers (with links)
+
+---
+
+7. **Eco-Friendly Moving Tips**  
+- How to reduce waste  
+- Where to find sustainable moving supplies  
+- Donation and recycling options before you move  
+- Encourage digital docs, minimalism, and green transport options
+
+---
+
+8. **Satisfaction Guarantee** (final page only)  
+- Centered, neatly styled light green box  
+- Inside:  
+<div style="max-width: 600px; margin: 40px auto; padding: 20px; background-color: #e6f4ea; border-radius: 10px; font-size: 16px; line-height: 1.5; text-align: center;">
+  <h2 style="color: #2c5530; font-size: 22px; margin-bottom: 12px;">Our Satisfaction Guarantee</h2>  
+  <p>We're confident you'll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we'll make it right, or refund you.</p>
+</div>
+
+---
+
+### Formatting & Styling Requirements
+
+- Return raw HTML only (no markdown formatting like \`\`\`)
+- Use semantic HTML: <h1>, <h2>, <table>, <ul>, <p>, etc.
+- Before each major section (Checklist, Cost, Action Plan, etc.) add:  
+  <div style="page-break-before: always;"></div>
+- For tables: use proper <thead>, <tr>, <th>, <td> layout
+- Use inline CSS only where needed (for spacing, borders, layout)
+- Prevent one or two lines leaking onto a new page — balance spacing
+- Checklist: use aligned ☐ symbols  
+- Final result must look clean, styled, and professional
+- The tone should be warm, helpful, trustworthy, and practical
+- Integrate user's additional info deeply across content, not just once
+- Ensure visually pleasing layout and formatting in PDF rendering
+- DO NOT return any markdown or triple-backtick code blocks
+
+If later enhancements include a map screenshot:  
+Add a placeholder where an <img src="{MAP_URL}"> tag could be inserted for city-level map thumbnails.
+
+This will be delivered to a paying user. Assume it will be printed or emailed. Quality and layout matter.`;
 
     console.log('🤖 Prompt length:', prompt.length);
     console.log('🤖 Making OpenAI API call...');

@@ -59,19 +59,31 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
-                  <span>AI-Generated comprehensive moving plan tailored to {city}</span>
+                  <span>Personalized overview and city introduction</span>
                 </li>
                 <li className="flex items-start">
                   <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Personalized timeline and budget planning guide</span>
+                  <span>Comprehensive 20+ item moving checklist</span>
                 </li>
                 <li className="flex items-start">
                   <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Local resources and essential service contacts</span>
+                  <span>Detailed cost breakdown for {city}</span>
                 </li>
                 <li className="flex items-start">
                   <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
-                  <span>30-60-90 day action plan for settling in</span>
+                  <span>30-60-90 day action plan timeline</span>
+                </li>
+                <li className="flex items-start">
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Local resources and essential contacts</span>
+                </li>
+                <li className="flex items-start">
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Moving company selection guide</span>
+                </li>
+                <li className="flex items-start">
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Eco-friendly moving tips and resources</span>
                 </li>
               </ul>
             </div>
