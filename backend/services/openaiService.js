@@ -15,119 +15,108 @@ const generateMovingPlan = async (city, questionnaire) => {
     console.log('🤖 City:', city);
     console.log('🤖 Questionnaire:', JSON.stringify(questionnaire, null, 2));
     
-    const prompt = `Create a comprehensive, personalized moving plan for someone relocating to ${city}. Use the following information about the person:
+    const prompt = `
+Create a comprehensive, professional, and fully personalized moving plan for someone relocating to ${city}. Use the following information about the person:
 
 - Moving Date: ${questionnaire.movingDate}
 - Budget: ${questionnaire.budget}
 - Household Size: ${questionnaire.householdSize} people
 - Income: ${questionnaire.income}
 - Reason for Moving: ${questionnaire.reason}
-${questionnaire.additionalInfo && questionnaire.additionalInfo.trim() 
-  ? `
-IMPORTANT: The user has provided additional personalization information:
+${questionnaire.additionalInfo ? `
+- Additional Context: ${questionnaire.additionalInfo}
 
-"${questionnaire.additionalInfo}"
+IMPORTANT: The user has provided additional personalization information. This must be used heavily throughout every section to guide tone, recommendations, resources, and adjustments in detail. Mention it often and let it shape the voice of the plan.` : ''}
 
-Use this user-provided context throughout the plan to personalize details, especially around neighborhood selection, budgeting, checklist items, and resources. This input is critical for tailoring the content.`
-  : ''}
-
-Generate the plan as clean, professional HTML with the following structured sections:
+Your output must be raw, production-grade HTML with clear formatting and structured layout, designed to be converted into a polished PDF. Each major section should fill approximately **one full A4 PDF page**, using detailed writing (around 800–1000 words per section), organized layout, and formatting balance.
 
 ---
 
-1. **Personalized Overview & Introduction**  
-- A warm, welcoming opening  
-- Address their reason for moving and how ${city} supports that  
-- Highlight cultural/lifestyle factors  
-- Offer high-level budget and timeline insights  
-${questionnaire.additionalInfo ? '- Incorporate any user context provided into tone and suggestions' : ''}
+### Sections to Include (1 page each minimum):
+
+1. **Personalized Welcome & Overview**
+   - Warm, detailed welcome to their new journey in ${city}
+   - Overview of city culture, climate, and lifestyle tailored to their reason for moving
+   - Touch on how this move fits their life stage, budget, and aspirations
+   - Use storytelling to build excitement
+   - Format using headings and paragraphs
+
+<div style="page-break-before: always;"></div>
+
+2. **Pre-Move Checklist**
+   - List at least 20 tailored tasks (based on family size, budget, timeline)
+   - Each task should appear as a line item with an empty checkbox ☐
+   - Include headers like "Documents to Prepare", "Home Prep", "Financial To-Dos"
+   - Format it like a print-ready form using borders or shading (but keep it minimal)
+   - Wrap in a <div class="checklist-page-break"> for rendering isolation
+   ${questionnaire.additionalInfo ? 'Incorporate custom checklist items based on the additional user details.' : ''}
+
+<div style="page-break-before: always;"></div>
+
+3. **Detailed Cost of Living in ${city}**
+   - Table layout: housing, transit, utilities, food, internet, healthcare, misc.
+   - Use user's budget + income to tailor insights
+   - Include footnotes for sources and estimated ranges
+   - End the table with a row showing a **Total Monthly Estimate**
+   - Add 1–2 paragraphs interpreting what this means for their budget and lifestyle
+
+<div style="page-break-before: always;"></div>
+
+4. **Moving Companies & Transportation Options**
+   - List 3–5 reputable moving companies that service ${city} (real or example names)
+   - Include comparison of full-service, container-based (like PODS), and self-move
+   - Explain insurance, timing tips, and what to ask when hiring
+   - Tailor recommendations for their budget and timeline
+   - Include external links if possible
+
+<div style="page-break-before: always;"></div>
+
+5. **30-60-90 Day Relocation Plan**
+   - Break down tasks and mindset shifts at 30 days before, during move week, and 30–90 days after
+   - Use numbered lists and headers
+   - Focus on managing stress, setting up services, meeting locals, and feeling "at home"
+   - Include motivation tips and short check-ins
+
+<div style="page-break-before: always;"></div>
+
+6. **Local Services & Community in ${city}**
+   - List utility companies, banks, healthcare, schools, DMV, voter registration
+   - Table format: columns for Service Type, Provider Name, Setup Info (or URL)
+   - Add neighborhood suggestions for families, remote workers, LGBTQ+ residents (if applicable)
+   - Tailor recommendations based on reason for moving and additional info
+
+<div style="page-break-before: always;"></div>
+
+7. **Eco-Conscious Moving Tips**
+   - Write a full section on minimizing waste, choosing green moving options, donating, recycling
+   - Explain how to reduce carbon footprint while relocating
+   - Include example sustainable moving companies or platforms
+   - Add a short "Eco Moving Checklist" at the bottom
+
+<div style="page-break-before: always;"></div>
+
+8. **Satisfaction Guarantee**
+   - Centered section on final page
+   - Place this in a light green box with neat padding and fixed width (~600px max)
+   - Use this text:
+     > We're confident you'll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we'll make it right — or refund you.
 
 ---
 
-2. **Pre-Move Checklist** (starts on a new PDF page)  
-- Render 20+ checklist items  
-- Each item on its own row using: ☐  
-- Checklist should be inside a <div class="checklist-page-break"> wrapper  
-- Personalize based on household size, moving date, income  
-- Visually balanced and print-ready with spacing, borders, and headings  
-${questionnaire.additionalInfo ? '- Include specific checklist items based on user notes' : ''}
+### Formatting & Output Rules:
 
-Example checklist row:  
-<div style="margin-bottom: 8px;">☐ Book movers 2–3 weeks before your move date</div>
+- **Every section must fill approximately one full PDF page** – use word count (~800–1000 words), spacing, and layout awareness.
+- **Avoid overly short sections. Never let sections end with only 1–2 lines on a page.**
+- Do not include any \`\`\`html or markdown syntax
+- Format with \`<h1>\`, \`<h2>\`, \`<p>\`, \`<ul>\`, and \`<table>\` as needed
+- Use \`<div style="page-break-before: always;"></div>\` before each major section
+- Use inline CSS sparingly but smartly (e.g., borders, spacing, background for boxes)
+- Do not output anything that is not pure HTML
+- Write as if the final product is being handed to a paying customer. It must be professional, polished, personal, and print-ready.
+- Always reflect any personal context or extra notes the user has provided
 
----
-
-3. **Cost Breakdown for ${city}**  
-- Table format  
-- Include: housing, transport, healthcare, food, utilities, insurance, emergency fund  
-- Add estimated monthly total at bottom  
-${questionnaire.additionalInfo ? '- Modify based on user expectations or financial context' : ''}
-
----
-
-4. **30-60-90 Day Action Plan**  
-- 30 Days Before: Prep tasks  
-- Move Week: Key logistics  
-- First 90 Days: Settling in, connecting locally  
-- Format with clear subheadings  
-${questionnaire.additionalInfo ? '- Adjust tasks/timing based on user-provided info' : ''}
-
----
-
-5. **Local Resources in ${city}**  
-- Table layout with: Type, Name, Website  
-- Include: utilities, DMV, schools, banks, healthcare, LGBTQ+ groups  
-- Use links when possible  
-${questionnaire.additionalInfo ? '- Prioritize any services mentioned or implied in the user context' : ''}
-
----
-
-6. **Hiring a Moving Company**  
-- Tips for comparing moving companies  
-- How to get quotes, licenses to check, red flags  
-- How to choose between full-service, hybrid, and DIY  
-- Include a short list of example nationwide movers (with links)
-
----
-
-7. **Eco-Friendly Moving Tips**  
-- How to reduce waste  
-- Where to find sustainable moving supplies  
-- Donation and recycling options before you move  
-- Encourage digital docs, minimalism, and green transport options
-
----
-
-8. **Satisfaction Guarantee** (final page only)  
-- Centered, neatly styled light green box  
-- Inside:  
-<div style="max-width: 600px; margin: 40px auto; padding: 20px; background-color: #e6f4ea; border-radius: 10px; font-size: 16px; line-height: 1.5; text-align: center;">
-  <h2 style="color: #2c5530; font-size: 22px; margin-bottom: 12px;">Our Satisfaction Guarantee</h2>  
-  <p>We're confident you'll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we'll make it right, or refund you.</p>
-</div>
-
----
-
-### Formatting & Styling Requirements
-
-- Return raw HTML only (no markdown formatting like \`\`\`)
-- Use semantic HTML: <h1>, <h2>, <table>, <ul>, <p>, etc.
-- Before each major section (Checklist, Cost, Action Plan, etc.) add:  
-  <div style="page-break-before: always;"></div>
-- For tables: use proper <thead>, <tr>, <th>, <td> layout
-- Use inline CSS only where needed (for spacing, borders, layout)
-- Prevent one or two lines leaking onto a new page — balance spacing
-- Checklist: use aligned ☐ symbols  
-- Final result must look clean, styled, and professional
-- The tone should be warm, helpful, trustworthy, and practical
-- Integrate user's additional info deeply across content, not just once
-- Ensure visually pleasing layout and formatting in PDF rendering
-- DO NOT return any markdown or triple-backtick code blocks
-
-If later enhancements include a map screenshot:  
-Add a placeholder where an <img src="{MAP_URL}"> tag could be inserted for city-level map thumbnails.
-
-This will be delivered to a paying user. Assume it will be printed or emailed. Quality and layout matter.`;
+DO NOT wrap or mark the HTML content as code. Just return valid HTML.
+`;
 
     console.log('🤖 Prompt length:', prompt.length);
     console.log('🤖 Making OpenAI API call...');

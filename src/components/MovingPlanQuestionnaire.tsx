@@ -20,6 +20,8 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
       household: "",
       income: "",
       moveReason: "",
+      hasChildren: "",
+      hasPets: "",
       additionalInfo: "",
     }
   });
@@ -295,6 +297,80 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
                           <RadioGroupItem value="other" />
                         </FormControl>
                         <FormLabel className="font-normal">Other</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="prefer-not-to-say" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Children Question */}
+            <FormField
+              control={form.control}
+              name="hasChildren"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Are you travelling with children?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="yes" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Yes</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="no" />
+                        </FormControl>
+                        <FormLabel className="font-normal">No</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="prefer-not-to-say" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Pets Question */}
+            <FormField
+              control={form.control}
+              name="hasPets"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Are you travelling with pets?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="yes" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Yes</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="no" />
+                        </FormControl>
+                        <FormLabel className="font-normal">No</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
