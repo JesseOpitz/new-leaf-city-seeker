@@ -19,6 +19,8 @@ const generatePDF = async (htmlContent, filename, city = '', state = '') => {
       'Moving Companies & Transportation Options',
       '30-60-90 Day Relocation Plan',
       'Local Services & Community',
+      'Food & Produce',
+      'Weather and Seasonal Adaptation',
       'Eco-Conscious Moving Tips',
       'Satisfaction Guarantee'
     ];

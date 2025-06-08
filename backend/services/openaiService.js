@@ -30,13 +30,13 @@ ${questionnaire.additionalInfo ? `
 
 IMPORTANT: The user has provided additional personalization information. This must be used heavily throughout every section to guide tone, recommendations, resources, and adjustments in detail. Mention it often and let it shape the voice of the plan. ESPECIALLY in the Personalized Welcome & Overview section, acknowledge their personal situation with empathy and understanding - if they mention challenges, express appropriate sympathy; if they mention exciting opportunities, share in their enthusiasm.` : ''}
 
-Your output must be raw, production-grade HTML with clear formatting and structured layout, designed to be converted into a polished PDF. Each major section should fill approximately **one full A4 PDF page**, using detailed writing (around 800–1000 words per section), organized layout, and formatting balance.
+Your output must be raw, production-grade HTML with clear formatting and structured layout, designed to be converted into a polished PDF. Each major section should fill approximately **one full A4 PDF page**, using detailed writing (minimum 400 words per section for all non-checklist sections), organized layout, and formatting balance.
 
 ---
 
 ### Sections to Include (1 page each minimum):
 
-1. **Personalized Welcome & Overview**
+1. **Personalized Welcome & Overview** (MINIMUM 400 WORDS)
    - Warm, detailed welcome to their new journey in ${city}
    - ${questionnaire.additionalInfo ? 'IMPORTANT: Address their personal situation from the additional context early in this section with genuine empathy and understanding. Make this feel like a human wrote it specifically for them.' : ''}
    - Overview of city culture, climate, and lifestyle tailored to their reason for moving
@@ -45,6 +45,7 @@ Your output must be raw, production-grade HTML with clear formatting and structu
    - ${questionnaire.hasPets ? 'Include pet-friendly considerations and moving tips' : ''}
    - Use storytelling to build excitement
    - Format using headings and paragraphs
+   - MUST BE AT LEAST 400 WORDS
 
 <div style="page-break-before: always;"></div>
 
@@ -60,56 +61,88 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 
 <div style="page-break-before: always;"></div>
 
-3. **Detailed Cost of Living in ${city}**
+3. **Detailed Cost of Living in ${city}** (MINIMUM 400 WORDS)
    - Table layout: housing, transit, utilities, food, internet, healthcare, misc.
    - ${questionnaire.hasChildren ? 'Include childcare and education costs' : ''}
    - ${questionnaire.hasPets ? 'Include pet care and veterinary costs' : ''}
    - Use user's budget + income to tailor insights
    - Include footnotes for sources and estimated ranges
    - End the table with a row showing a **Total Monthly Estimate**
-   - Add 1–2 paragraphs interpreting what this means for their budget and lifestyle
+   - Add detailed paragraphs interpreting what this means for their budget and lifestyle
+   - MUST BE AT LEAST 400 WORDS
 
 <div style="page-break-before: always;"></div>
 
-4. **Moving Companies & Transportation Options**
+4. **Moving Companies & Transportation Options** (MINIMUM 400 WORDS)
    - List 3–5 reputable moving companies that service ${city} (real or example names)
    - Include comparison of full-service, container-based (like PODS), and self-move
    - ${questionnaire.hasPets ? 'Include pet transportation services and considerations' : ''}
    - Explain insurance, timing tips, and what to ask when hiring
    - Tailor recommendations for their budget and timeline
    - Include external links if possible
+   - MUST BE AT LEAST 400 WORDS
 
 <div style="page-break-before: always;"></div>
 
-5. **30-60-90 Day Relocation Plan**
+5. **30-60-90 Day Relocation Plan** (MINIMUM 400 WORDS)
    - Break down tasks and mindset shifts at 30 days before, during move week, and 30–90 days after
    - Use numbered lists and headers
    - ${questionnaire.hasChildren ? 'Include school enrollment timelines and child adjustment considerations' : ''}
    - ${questionnaire.hasPets ? 'Include pet acclimation and local veterinary setup' : ''}
    - Focus on managing stress, setting up services, meeting locals, and feeling "at home"
    - Include motivation tips and short check-ins
+   - MUST BE AT LEAST 400 WORDS
 
 <div style="page-break-before: always;"></div>
 
-6. **Local Services & Community in ${city}**
+6. **Local Services & Community in ${city}** (MINIMUM 400 WORDS)
    - List utility companies, banks, healthcare, schools, DMV, voter registration
    - ${questionnaire.hasChildren ? 'Prioritize schools, pediatricians, and family activities' : ''}
    - ${questionnaire.hasPets ? 'Include veterinarians, pet stores, dog parks, and pet services' : ''}
    - Table format: columns for Service Type, Provider Name, Setup Info (or URL)
    - Add neighborhood suggestions for families, remote workers, LGBTQ+ residents (if applicable)
    - Tailor recommendations based on reason for moving and additional info
+   - MUST BE AT LEAST 400 WORDS
 
 <div style="page-break-before: always;"></div>
 
-7. **Eco-Conscious Moving Tips**
+7. **Food & Produce in ${city}** (MINIMUM 400 WORDS)
+   - Overview of popular local foods and signature dishes specific to ${city} and the region
+   - Local specialties, must-try restaurants, and food culture
+   - Seasonal fruits and vegetables available throughout the year
+   - Include a monthly produce calendar showing what's in season when
+   - Farmers markets, local food co-ops, and specialty grocery stores
+   - ${questionnaire.hasChildren ? 'Family-friendly restaurants and kid-approved local foods' : ''}
+   - Food festivals and culinary events throughout the year
+   - Budget-friendly eating options and how food costs compare
+   - MUST BE AT LEAST 400 WORDS
+
+<div style="page-break-before: always;"></div>
+
+8. **Weather and Seasonal Adaptation** (MINIMUM 400 WORDS)
+   - Comprehensive overview of ${city}'s climate and seasonal patterns
+   - Monthly weather table with approximate high and low temperatures
+   - What to expect each season and how to prepare
+   - Seasonal activities and lifestyle adjustments
+   - Clothing recommendations for each season
+   - How weather affects daily life, commuting, and outdoor activities
+   - ${questionnaire.hasChildren ? 'Seasonal considerations for families and school-age children' : ''}
+   - ${questionnaire.hasPets ? 'How weather affects pets and seasonal pet care tips' : ''}
+   - Energy costs and home preparation for different seasons
+   - MUST BE AT LEAST 400 WORDS
+
+<div style="page-break-before: always;"></div>
+
+9. **Eco-Conscious Moving Tips** (MINIMUM 400 WORDS)
    - Write a full section on minimizing waste, choosing green moving options, donating, recycling
    - Explain how to reduce carbon footprint while relocating
    - Include example sustainable moving companies or platforms
    - Add a short "Eco Moving Checklist" at the bottom
+   - MUST BE AT LEAST 400 WORDS
 
 <div style="page-break-before: always;"></div>
 
-8. **Satisfaction Guarantee**
+10. **Satisfaction Guarantee**
    - Centered section on final page
    - Place this in a light green box with neat padding and fixed width (~600px max)
    - Use this text:
@@ -119,7 +152,7 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 
 ### Formatting & Output Rules:
 
-- **Every section must fill approximately one full PDF page** – use word count (~800–1000 words), spacing, and layout awareness.
+- **Every section must fill approximately one full PDF page** – use word count (minimum 400 words for non-checklist sections), spacing, and layout awareness.
 - **Avoid overly short sections. Never let sections end with only 1–2 lines on a page.**
 - Do not include any \`\`\`html or markdown syntax
 - Format with \`<h1>\`, \`<h2>\`, \`<p>\`, \`<ul>\`, and \`<table>\` as needed
@@ -140,7 +173,7 @@ DO NOT wrap or mark the HTML content as code. Just return valid HTML.
       messages: [
         {
           role: "system",
-          content: "You are a helpful moving specialist who creates detailed, personalized relocation plans. Always respond with well-formatted HTML that's ready for PDF conversion. Pay special attention to any user-provided additional information and use it extensively throughout the plan to create a truly personalized experience. Show genuine empathy and understanding for their personal situation."
+          content: "You are a helpful moving specialist who creates detailed, personalized relocation plans. Always respond with well-formatted HTML that's ready for PDF conversion. Pay special attention to any user-provided additional information and use it extensively throughout the plan to create a truly personalized experience. Show genuine empathy and understanding for their personal situation. Ensure each non-checklist section contains at least 400 words of detailed, valuable content."
         },
         {
           role: "user",
