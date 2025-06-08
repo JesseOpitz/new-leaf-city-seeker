@@ -1,14 +1,76 @@
+
 const { chromium } = require('playwright-core');
 const chromiumBundle = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs').promises;
 
-const generatePDF = async (htmlContent, filename) => {
+const generatePDF = async (htmlContent, filename, city = '', state = '') => {
   let browser;
 
   try {
     console.log('📄 Starting PDF generation...');
     if (!htmlContent || !filename) throw new Error('Missing content or filename');
+
+    // Define the content list for the title page
+    const content_list = [
+      'Personalized Welcome & Overview',
+      'Pre-Move Checklist',
+      'Detailed Cost of Living',
+      'Moving Companies & Transportation Options',
+      '30-60-90 Day Relocation Plan',
+      'Local Services & Community',
+      'Eco-Conscious Moving Tips',
+      'Satisfaction Guarantee'
+    ];
+
+    const titlePageHTML = `
+      <div style="
+        height: 100vh; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        text-align: center; 
+        padding: 40px 20px;
+        page-break-after: always;
+      ">
+        <div style="margin-bottom: 40px;">
+          <img src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/logo.png" 
+               alt="New Leaf Logo" 
+               style="max-height: 120px; max-width: 300px;" />
+        </div>
+        
+        <h1 style="
+          color: #2c5530; 
+          font-size: 28px; 
+          margin-bottom: 30px; 
+          line-height: 1.4;
+          max-width: 600px;
+        ">
+          Thank you for purchasing your personalized moving plan for ${city}, ${state}
+        </h1>
+        
+        <p style="
+          font-size: 18px; 
+          color: #333; 
+          margin-bottom: 25px;
+          font-weight: 500;
+        ">
+          In this plan, you will find the following:
+        </p>
+        
+        <ol style="
+          font-size: 16px; 
+          color: #333; 
+          text-align: left; 
+          max-width: 500px; 
+          line-height: 1.6;
+          padding-left: 20px;
+        ">
+          ${content_list.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+        </ol>
+      </div>
+    `;
 
     const styledHTML = `
       <!DOCTYPE html>
@@ -97,11 +159,27 @@ const generatePDF = async (htmlContent, filename) => {
             border-top: 1px solid #dee2e6;
             padding-top: 20px;
           }
+          
+          /* Media queries for content overflow prevention */
+          @media print {
+            .title-page ol {
+              font-size: 14px !important;
+              line-height: 1.4 !important;
+            }
+            .title-page h1 {
+              font-size: 24px !important;
+              margin-bottom: 20px !important;
+            }
+            .title-page p {
+              font-size: 16px !important;
+              margin-bottom: 20px !important;
+            }
+          }
         </style>
       </head>
       <body>
-        <div class="header-logo">
-          <img src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/logo.png" alt="New Leaf Logo" style="max-height: 80px; display: block; margin: 0 auto 20px;" />
+        <div class="title-page">
+          ${titlePageHTML}
         </div>
         ${htmlContent}
         <div class="footer">

@@ -23,10 +23,12 @@ Create a comprehensive, professional, and fully personalized moving plan for som
 - Household Size: ${questionnaire.householdSize} people
 - Income: ${questionnaire.income}
 - Reason for Moving: ${questionnaire.reason}
+- Travelling with Children: ${questionnaire.hasChildren ? 'Yes' : 'No'}
+- Travelling with Pets: ${questionnaire.hasPets ? 'Yes' : 'No'}
 ${questionnaire.additionalInfo ? `
 - Additional Context: ${questionnaire.additionalInfo}
 
-IMPORTANT: The user has provided additional personalization information. This must be used heavily throughout every section to guide tone, recommendations, resources, and adjustments in detail. Mention it often and let it shape the voice of the plan.` : ''}
+IMPORTANT: The user has provided additional personalization information. This must be used heavily throughout every section to guide tone, recommendations, resources, and adjustments in detail. Mention it often and let it shape the voice of the plan. ESPECIALLY in the Personalized Welcome & Overview section, acknowledge their personal situation with empathy and understanding - if they mention challenges, express appropriate sympathy; if they mention exciting opportunities, share in their enthusiasm.` : ''}
 
 Your output must be raw, production-grade HTML with clear formatting and structured layout, designed to be converted into a polished PDF. Each major section should fill approximately **one full A4 PDF page**, using detailed writing (around 800–1000 words per section), organized layout, and formatting balance.
 
@@ -36,8 +38,11 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 
 1. **Personalized Welcome & Overview**
    - Warm, detailed welcome to their new journey in ${city}
+   - ${questionnaire.additionalInfo ? 'IMPORTANT: Address their personal situation from the additional context early in this section with genuine empathy and understanding. Make this feel like a human wrote it specifically for them.' : ''}
    - Overview of city culture, climate, and lifestyle tailored to their reason for moving
    - Touch on how this move fits their life stage, budget, and aspirations
+   - ${questionnaire.hasChildren ? 'Include family-friendly considerations and resources' : ''}
+   - ${questionnaire.hasPets ? 'Include pet-friendly considerations and moving tips' : ''}
    - Use storytelling to build excitement
    - Format using headings and paragraphs
 
@@ -47,6 +52,8 @@ Your output must be raw, production-grade HTML with clear formatting and structu
    - List at least 20 tailored tasks (based on family size, budget, timeline)
    - Each task should appear as a line item with an empty checkbox ☐
    - Include headers like "Documents to Prepare", "Home Prep", "Financial To-Dos"
+   - ${questionnaire.hasChildren ? 'Include child-specific tasks like school enrollment and medical records transfer' : ''}
+   - ${questionnaire.hasPets ? 'Include pet-specific tasks like vet records, travel carriers, and pet registration' : ''}
    - Format it like a print-ready form using borders or shading (but keep it minimal)
    - Wrap in a <div class="checklist-page-break"> for rendering isolation
    ${questionnaire.additionalInfo ? 'Incorporate custom checklist items based on the additional user details.' : ''}
@@ -55,6 +62,8 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 
 3. **Detailed Cost of Living in ${city}**
    - Table layout: housing, transit, utilities, food, internet, healthcare, misc.
+   - ${questionnaire.hasChildren ? 'Include childcare and education costs' : ''}
+   - ${questionnaire.hasPets ? 'Include pet care and veterinary costs' : ''}
    - Use user's budget + income to tailor insights
    - Include footnotes for sources and estimated ranges
    - End the table with a row showing a **Total Monthly Estimate**
@@ -65,6 +74,7 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 4. **Moving Companies & Transportation Options**
    - List 3–5 reputable moving companies that service ${city} (real or example names)
    - Include comparison of full-service, container-based (like PODS), and self-move
+   - ${questionnaire.hasPets ? 'Include pet transportation services and considerations' : ''}
    - Explain insurance, timing tips, and what to ask when hiring
    - Tailor recommendations for their budget and timeline
    - Include external links if possible
@@ -74,6 +84,8 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 5. **30-60-90 Day Relocation Plan**
    - Break down tasks and mindset shifts at 30 days before, during move week, and 30–90 days after
    - Use numbered lists and headers
+   - ${questionnaire.hasChildren ? 'Include school enrollment timelines and child adjustment considerations' : ''}
+   - ${questionnaire.hasPets ? 'Include pet acclimation and local veterinary setup' : ''}
    - Focus on managing stress, setting up services, meeting locals, and feeling "at home"
    - Include motivation tips and short check-ins
 
@@ -81,6 +93,8 @@ Your output must be raw, production-grade HTML with clear formatting and structu
 
 6. **Local Services & Community in ${city}**
    - List utility companies, banks, healthcare, schools, DMV, voter registration
+   - ${questionnaire.hasChildren ? 'Prioritize schools, pediatricians, and family activities' : ''}
+   - ${questionnaire.hasPets ? 'Include veterinarians, pet stores, dog parks, and pet services' : ''}
    - Table format: columns for Service Type, Provider Name, Setup Info (or URL)
    - Add neighborhood suggestions for families, remote workers, LGBTQ+ residents (if applicable)
    - Tailor recommendations based on reason for moving and additional info
@@ -126,7 +140,7 @@ DO NOT wrap or mark the HTML content as code. Just return valid HTML.
       messages: [
         {
           role: "system",
-          content: "You are a helpful moving specialist who creates detailed, personalized relocation plans. Always respond with well-formatted HTML that's ready for PDF conversion. Pay special attention to any user-provided additional information and use it extensively throughout the plan to create a truly personalized experience."
+          content: "You are a helpful moving specialist who creates detailed, personalized relocation plans. Always respond with well-formatted HTML that's ready for PDF conversion. Pay special attention to any user-provided additional information and use it extensively throughout the plan to create a truly personalized experience. Show genuine empathy and understanding for their personal situation."
         },
         {
           role: "user",

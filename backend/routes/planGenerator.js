@@ -44,7 +44,12 @@ router.post('/generate-plan', async (req, res) => {
     const filename = sanitizeFilename(`moving-plan-${city.toLowerCase().replace(/[^a-z0-9]/g, '-')}.pdf`);
     console.log(`📄 PDF filename will be: ${filename}`);
     
-    const pdfPath = await generatePDF(planHTML, filename);
+    // Extract state from city string if it contains comma
+    const cityParts = city.split(',');
+    const cityName = cityParts[0]?.trim() || city;
+    const stateName = cityParts[1]?.trim() || '';
+    
+    const pdfPath = await generatePDF(planHTML, filename, cityName, stateName);
     console.log(`📄 PDF generated successfully at: ${pdfPath}`);
 
     if (email) {
