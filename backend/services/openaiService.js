@@ -15,6 +15,11 @@ const generateMovingPlan = async (city, questionnaire) => {
     console.log('🤖 City:', city);
     console.log('🤖 Questionnaire:', JSON.stringify(questionnaire, null, 2));
     
+    // Prepare additional info section
+    const additionalInfoSection = questionnaire.additionalInfo && questionnaire.additionalInfo.trim() 
+      ? `\n\nIMPORTANT: The user has provided additional personalization information: "${questionnaire.additionalInfo}"\n\nThis is crucial user input that should be used throughout the entire moving plan to add specific, personalized details and recommendations. Reference this information when making suggestions about neighborhoods, services, timeline adjustments, budget considerations, and any other relevant aspects of the moving plan. This user input is key for creating a truly customized experience.`
+      : '';
+
     const prompt = `
 Create a comprehensive, personalized moving plan for someone relocating to ${city}. Use the following information about the person:
 
@@ -22,7 +27,7 @@ Create a comprehensive, personalized moving plan for someone relocating to ${cit
 - Budget: ${questionnaire.budget}
 - Household Size: ${questionnaire.householdSize} people
 - Income: ${questionnaire.income}
-- Reason for Moving: ${questionnaire.reason}
+- Reason for Moving: ${questionnaire.reason}${additionalInfoSection}
 
 Generate a warm, helpful, and detailed moving plan formatted as clean HTML with the following sections:
 
@@ -32,6 +37,7 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Address their reason for moving and how ${city} can fulfill that
    - Discuss the city's culture, climate, and lifestyle
    - Provide high-level guidance for their timeline and budget
+   ${questionnaire.additionalInfo ? '- Specifically address and incorporate their additional preferences and situation details provided' : ''}
 
 2. **Pre-Move Checklist** (place this section on its own PDF page)
    - Render each checklist item as a separate row with an empty checkbox (use: ☐)
@@ -41,6 +47,7 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Important documents and records to gather
    - Tasks to complete before leaving their current location
    - Come up with 20 check list items at a minimum, make this page beaituful and print ready with check boxes and a border. Make it feel personal.
+   ${questionnaire.additionalInfo ? '- Include specific checklist items based on their additional information provided' : ''}
 
 3. **Cost Breakdown for ${city}**
    - Housing costs (rent/mortgage) relevant to their budget
@@ -51,11 +58,13 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Entertainment and miscellaneous expenses
    - Emergency fund recommendations
    - Format this page as a table, include total estimate at the bottom.
+   ${questionnaire.additionalInfo ? '- Adjust cost considerations based on their specific needs and preferences mentioned' : ''}
 
 4. **30-60-90 Day Action Plan**
    - 30 days before: Critical preparations
    - Move week: Step-by-step moving process
    - 90 days after: Settling in and establishing routines
+   ${questionnaire.additionalInfo ? '- Customize timeline recommendations based on their additional information' : ''}
 
 5. **Local Resources for ${city}**
    - Utilities companies and setup procedures
@@ -66,14 +75,15 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
    - Community groups and networking opportunities
    - LGBTQ+ and women's resources (if available)
    - Where possible provide links to each of these services. format this section as a table also
+   ${questionnaire.additionalInfo ? '- Prioritize and highlight resources that align with their specific interests and needs mentioned' : ''}
 
 6. **Satisfaction Guarantee**
    - Add a final section at the very bottom of the document.
    - Title it "Our Satisfaction Guarantee"
    - Sits within a neatly formatted light green box centered on the page. ensure formatting is even.
-   - Use this message: We’re confident you’ll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we’ll make it right, or refund you.
+   - Use this message: We're confident you'll love your personalized plan. If you're not satisfied with your New Leaf moving plan for any reason, contact us at any time and we'll make it right, or refund you.
 
-
+Format requirements:
 - Proper headings (h1, h2, h3)
 - Organized paragraphs and lists
 - Inline CSS only where needed
@@ -82,9 +92,9 @@ Generate a warm, helpful, and detailed moving plan formatted as clean HTML with 
 - Avoid wrapping the entire HTML with any extra code block markers
 - Maintain a warm, practical, and encouraging tone
 - if a page is very bare, such as overflow from the previous page please do your best to even out the pages
-- professional finish product. this is prlvided to customers so should be as clean as possible
+- professional finish product. this is provided to customers so should be as clean as possible
 
-The tone should be encouraging, practical, and personalized to their specific situation.
+The tone should be encouraging, practical, and personalized to their specific situation. ${questionnaire.additionalInfo ? 'Make sure to weave in their additional personal information throughout the entire document to create a truly customized experience.' : ''}
 
 Important: DO NOT include markdown-style code blocks like \`\`\`html or \`\`\`. Only return raw HTML content without any wrapping syntax.
 `;
@@ -97,7 +107,7 @@ Important: DO NOT include markdown-style code blocks like \`\`\`html or \`\`\`. 
       messages: [
         {
           role: "system",
-          content: "You are a helpful moving specialist who creates detailed, personalized relocation plans. Always respond with well-formatted HTML that's ready for PDF conversion."
+          content: "You are a helpful moving specialist who creates detailed, personalized relocation plans. Always respond with well-formatted HTML that's ready for PDF conversion. Pay special attention to any user-provided additional information and use it extensively throughout the plan to create a truly personalized experience."
         },
         {
           role: "user",

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,7 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
       setIsProcessing(false);
       toast({
         title: "Payment Successful!",
-        description: `Your personalized moving plan for ${city}, ${state} will be sent to ${email} within 24 hours.`,
+        description: `Your personalized moving plan for ${city}, ${state} will be sent to ${email}.`,
       });
       onClose();
     }, 1500);
@@ -57,20 +58,20 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
               <h3 className="text-lg font-semibold mb-2">What You'll Get:</h3>
               <ul className="space-y-2">
                 <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Customized moving checklist tailored to {city}</span>
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>AI-Generated comprehensive moving plan tailored to {city}</span>
                 </li>
                 <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Budget planning guide with local cost estimates</span>
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Personalized timeline and budget planning guide</span>
                 </li>
                 <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Local neighborhood recommendations based on your preferences</span>
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Local resources and essential service contacts</span>
                 </li>
                 <li className="flex items-start">
-                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5" />
-                  <span>Essential local resources and contacts</span>
+                  <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+                  <span>30-60-90 day action plan for settling in</span>
                 </li>
               </ul>
             </div>

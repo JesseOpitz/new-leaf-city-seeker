@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,6 +20,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
       household: "",
       income: "",
       moveReason: "",
+      additionalInfo: "",
     }
   });
 
@@ -302,6 +304,28 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Additional Information Field */}
+            <FormField
+              control={form.control}
+              name="additionalInfo"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Additional Information (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Feel free to add any additional information about your preferences, situation, or specific needs for your move..."
+                      className="min-h-[120px] resize-none"
+                      maxLength={1000}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">
+                    {field.value?.length || 0}/1000 characters - This helps us create a more personalized moving plan for you
+                  </p>
                 </FormItem>
               )}
             />

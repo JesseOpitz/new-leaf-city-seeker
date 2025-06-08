@@ -66,7 +66,8 @@ const MovingPlanDetails = ({
                       questionnaireData?.household === '3-4' ? 3 :
                       questionnaireData?.household === '5+' ? 5 : 1,
         income: questionnaireData?.income || 'not specified',
-        reason: questionnaireData?.moveReason || 'not specified'
+        reason: questionnaireData?.moveReason || 'not specified',
+        additionalInfo: questionnaireData?.additionalInfo || ''
       };
       
       console.log('📋 Mapped questionnaire data:', mappedQuestionnaire);
@@ -205,14 +206,6 @@ const MovingPlanDetails = ({
             <div>
               <span className="font-medium">Budget Planning:</span>
               <p className="text-sm text-gray-600">Detailed cost breakdown specific to {city} with budget optimization strategies</p>
-            </div>
-          </li>
-          
-          <li className="flex items-start">
-            <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <span className="font-medium">Housing Strategy:</span>
-              <p className="text-sm text-gray-600">Neighborhood recommendations and market insights for {city}</p>
             </div>
           </li>
           
