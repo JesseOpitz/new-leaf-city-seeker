@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,7 +51,7 @@ const MovingPlanDetails = ({
     }
 
     try {
-      console.log('🚀 Starting backend API call to generate moving plan...');
+      console.log('🚀 Starting backend API call to generate multi-PDF moving plan...');
       console.log('📍 City:', city, 'State:', state);
       console.log('📋 Raw questionnaire data:', questionnaireData);
       console.log('📧 Email:', email);
@@ -67,6 +66,8 @@ const MovingPlanDetails = ({
                       questionnaireData?.household === '5+' ? 5 : 1,
         income: questionnaireData?.income || 'not specified',
         reason: questionnaireData?.moveReason || 'not specified',
+        hasChildren: questionnaireData?.hasChildren || false,
+        hasPets: questionnaireData?.hasPets || false,
         additionalInfo: questionnaireData?.additionalInfo || ''
       };
       
@@ -119,50 +120,30 @@ const MovingPlanDetails = ({
       });
     }
   };
-
-  // Determine timeline description based on questionnaire data
-  const getTimelineDescription = () => {
-    switch(questionnaireData?.timeline) {
-      case '0-3':
-        return 'Short-term moving checklist with immediate action items';
-      case '3-6':
-        return 'Mid-term planning guide with 3-6 month timeline';
-      case '6-12':
-        return 'Long-term preparation schedule with quarterly milestones';
-      case '12+':
-        return 'Extended planning timeline with seasonal preparation steps';
-      default:
-        return 'Flexible timeline with adaptable scheduling options';
-    }
-  };
-
-  // Determine budget description based on questionnaire data
-  const getBudgetDescription = () => {
-    switch(questionnaireData?.budget) {
-      case 'under-1000':
-        return 'Budget-conscious moving strategies and cost-saving tips';
-      case '1000-3000':
-        return 'Moderate budget planning with essential service recommendations';
-      case '3000-5000':
-        return 'Comprehensive budget allocation across all moving aspects';
-      case '5000-10000':
-        return 'Premium service options with quality-focused recommendations';
-      case '10000+':
-        return 'Luxury relocation services and high-end provider suggestions';
-      default:
-        return 'Customizable budget planning with scalable options';
-    }
-  };
   
   if (showSuccessPopup) {
+    const guideCount = 4 + (questionnaireData?.hasChildren || questionnaireData?.hasPets ? 1 : 0);
+    
     return (
       <div className="p-6 text-center">
         <div className="mb-6">
           <h3 className="text-2xl font-bold text-leaf-dark mb-4">Congratulations!</h3>
-          <p className="text-lg mb-2">Your Moving Plan is Being Generated and Sent to</p>
+          <p className="text-lg mb-2">Your Complete Moving Plan Package is Being Generated</p>
           <p className="text-lg font-medium text-leaf-dark mb-4">{email}</p>
+          <div className="bg-leaf-light p-4 rounded-lg mb-4">
+            <h4 className="font-semibold text-leaf-dark mb-2">Your package includes {guideCount} comprehensive guides:</h4>
+            <ul className="text-sm text-gray-700 text-left max-w-md mx-auto">
+              <li>• Welcome & Introduction Guide</li>
+              <li>• Moving Checklist & Timeline</li>
+              <li>• Cost Breakdown & Local Resources</li>
+              <li>• Seasonal Living Guide</li>
+              {(questionnaireData?.hasChildren || questionnaireData?.hasPets) && (
+                <li>• {questionnaireData?.hasChildren && questionnaireData?.hasPets ? 'Family & Pets' : questionnaireData?.hasChildren ? 'Children & Family' : 'Pet Owner'} Guide</li>
+              )}
+            </ul>
+          </div>
           <p className="text-sm text-gray-600">
-            Please allow up to 15 minutes for the plan to be generated and sent. If you are having issues receiving your plan, please contact us at support@woridle.com
+            Please allow up to 15 minutes for all guides to be generated and sent. If you are having issues receiving your plans, please contact us at support@woridle.com
           </p>
         </div>
         <Button onClick={onCancel} className="bg-leaf hover:bg-leaf-dark">
@@ -174,57 +155,66 @@ const MovingPlanDetails = ({
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4 text-leaf-dark">Your Personalized Moving Plan</h3>
+      <h3 className="text-xl font-semibold mb-4 text-leaf-dark">Your Complete Moving Plan Package</h3>
       
       <p className="text-sm text-gray-600 mb-6">
-        Based on your responses, we've customized a moving plan specifically for you.
+        Based on your responses, we've created a comprehensive moving plan package specifically for you.
         Here's what you'll receive after purchase:
       </p>
 
       <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h4 className="font-medium text-leaf-dark mb-2">Tailored Moving Plan for {city}, {state}</h4>
+        <h4 className="font-medium text-leaf-dark mb-2">Comprehensive Moving Plan Package for {city}, {state}</h4>
         
-        <ul className="space-y-4">
-          <li className="flex items-start">
+        <div className="grid gap-3">
+          <div className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">AI-Generated Comprehensive Plan:</span>
-              <p className="text-sm text-gray-600">2000+ word detailed moving guide created specifically for your situation using advanced AI</p>
+              <span className="font-medium">Welcome & Introduction Guide:</span>
+              <p className="text-sm text-gray-600">Personalized city overview, cultural insights, and transition strategies</p>
             </div>
-          </li>
+          </div>
           
-          <li className="flex items-start">
+          <div className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">Personalized Timeline:</span>
-              <p className="text-sm text-gray-600">Custom checklist and milestones based on your moving timeline and household needs</p>
+              <span className="font-medium">Moving Checklist & Timeline:</span>
+              <p className="text-sm text-gray-600">30-60-90 day action plan with comprehensive moving checklist</p>
             </div>
-          </li>
+          </div>
           
-          <li className="flex items-start">
+          <div className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">Budget Planning:</span>
-              <p className="text-sm text-gray-600">Detailed cost breakdown specific to {city} with budget optimization strategies</p>
+              <span className="font-medium">Cost Breakdown & Local Resources:</span>
+              <p className="text-sm text-gray-600">Detailed budget analysis and essential local contacts directory</p>
             </div>
-          </li>
+          </div>
           
-          <li className="flex items-start">
+          <div className="flex items-start">
             <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium">Local Resources & Contacts:</span>
-              <p className="text-sm text-gray-600">Essential services, utilities, and community resources specific to {city}</p>
+              <span className="font-medium">Seasonal Living Guide:</span>
+              <p className="text-sm text-gray-600">Weather patterns, seasonal foods, and year-round lifestyle tips</p>
             </div>
-          </li>
+          </div>
 
-          <li className="flex items-start">
-            <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <span className="font-medium">30-60-90 Day Action Plan:</span>
-              <p className="text-sm text-gray-600">Step-by-step integration guide for your first three months in {city}</p>
+          {(questionnaireData?.hasChildren || questionnaireData?.hasPets) && (
+            <div className="flex items-start">
+              <Check size={20} className="text-leaf-dark mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-medium">
+                  {questionnaireData?.hasChildren && questionnaireData?.hasPets ? 'Family & Pets' : 
+                   questionnaireData?.hasChildren ? 'Children & Family' : 'Pet Owner'} Guide:
+                </span>
+                <p className="text-sm text-gray-600">
+                  Specialized moving advice and resources for 
+                  {questionnaireData?.hasChildren && questionnaireData?.hasPets ? ' families with children and pets' : 
+                   questionnaireData?.hasChildren ? ' families with children' : ' pet owners'}
+                </p>
+              </div>
             </div>
-          </li>
-        </ul>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -257,13 +247,13 @@ const MovingPlanDetails = ({
             className="w-full"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Your personalized moving plan will be generated and sent to this email immediately after payment.
+            Your personalized moving plan package will be generated and sent to this email immediately after payment.
           </p>
         </div>
         
         <div className="text-center">
           <p className="text-2xl font-bold text-leaf-dark">$3.99</p>
-          <p className="text-sm text-gray-500">One-time payment • Instant delivery</p>
+          <p className="text-sm text-gray-500">One-time payment • Complete package delivery</p>
         </div>
         
         <div className="flex justify-end space-x-3">
@@ -280,7 +270,7 @@ const MovingPlanDetails = ({
             className="bg-leaf hover:bg-leaf-dark disabled:bg-gray-400"
             disabled={isProcessing || !email || !confirmEmail}
           >
-            {isProcessing ? "Processing..." : "Purchase Plan"}
+            {isProcessing ? "Processing..." : "Purchase Complete Package"}
           </Button>
         </div>
       </form>
