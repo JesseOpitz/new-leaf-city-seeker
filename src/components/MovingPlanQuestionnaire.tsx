@@ -81,6 +81,10 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
       
       if (response.ok) {
         console.log('Plan generation successful:', result);
+        toast({
+          title: "Plans Generated Successfully!",
+          description: `Your moving plans have been sent to ${email}.`,
+        });
       } else {
         console.error('Plan generation failed:', result);
         toast({
