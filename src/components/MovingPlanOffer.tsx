@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Check } from 'lucide-react';
 import MovingPlanQuestionnaire from './MovingPlanQuestionnaire';
-import MovingPlanDetails from './MovingPlanDetails';
 
 interface MovingPlanOfferProps {
   city: string;
@@ -17,7 +16,7 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState<'intro' | 'questionnaire' | 'details'>('intro');
+  const [step, setStep] = useState<'intro' | 'questionnaire'>('intro');
   const [questionnaireData, setQuestionnaireData] = useState<any>(null);
 
   const handleStartQuestionnaire = () => {
@@ -26,22 +25,67 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
 
   const handleQuestionnaireComplete = (data: any) => {
     setQuestionnaireData(data);
-    setStep('details');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !questionnaireData) return;
+    
     setIsProcessing(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      toast({
-        title: "Payment Successful!",
-        description: `Your personalized moving plan for ${city}, ${state} will be sent to ${email}.`,
+    // Show immediate success message
+    toast({
+      title: "Thank you for your purchase!",
+      description: `Your personalized moving plan is being generated. Please allow up to 15 minutes for your plan to be generated and sent to ${email}.`,
+    });
+    
+    try {
+      const response = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          city: `${city}, ${state}`,
+          email: email,
+          questionnaire: {
+            timeline: questionnaireData.timeline,
+            budget: questionnaireData.budget,
+            household: questionnaireData.household,
+            income: questionnaireData.income,
+            moveReason: questionnaireData.moveReason,
+            hasChildren: questionnaireData.hasChildren === 'yes',
+            hasPets: questionnaireData.hasPets === 'yes',
+            additionalInfo: questionnaireData.additionalInfo,
+            movingDate: questionnaireData.timeline,
+            householdSize: questionnaireData.household,
+            reason: questionnaireData.moveReason
+          }
+        }),
       });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log('Plan generation successful:', result);
+      } else {
+        console.error('Plan generation failed:', result);
+        toast({
+          title: "Generation in progress",
+          description: "Your plan is being generated and will be sent to your email shortly.",
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting plan request:', error);
+      toast({
+        title: "Generation in progress",
+        description: "Your plan is being generated and will be sent to your email shortly.",
+      });
+    } finally {
+      setIsProcessing(false);
       onClose();
-    }, 1500);
+    }
   };
 
   return (
@@ -117,25 +161,70 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
         
         {step === 'questionnaire' && (
           <div className="overflow-y-auto flex-1">
-            <MovingPlanQuestionnaire 
-              onComplete={handleQuestionnaireComplete}
-              onCancel={onClose}
-            />
-          </div>
-        )}
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Complete the questionnaire and provide your email to receive your customized plan.
+              </p>
 
-        {step === 'details' && (
-          <div className="overflow-y-auto flex-1">
-            <MovingPlanDetails
-              city={city}
-              state={state}
-              questionnaireData={questionnaireData}
-              onSubmit={handleSubmit}
-              email={email}
-              setEmail={setEmail}
-              isProcessing={isProcessing}
-              onCancel={onClose}
-            />
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <MovingPlanQuestionnaire 
+                  onComplete={handleQuestionnaireComplete}
+                  onCancel={onClose}
+                  embedded={true}
+                />
+                
+                {questionnaireData && (
+                  <>
+                    <div className="border-t pt-6">
+                      <h4 className="text-md font-semibold mb-3">Email & Payment</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address
+                          </label>
+                          <Input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="your@email.com"
+                            required
+                            className="w-full"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Your moving plan will be sent to this email address
+                          </p>
+                        </div>
+                        
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-leaf-dark mb-2">$3.99</p>
+                          <p className="text-sm text-gray-500">One-time payment</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-3 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={onClose}
+                        disabled={isProcessing}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-leaf hover:bg-leaf-dark"
+                        disabled={isProcessing || !email}
+                      >
+                        {isProcessing ? 'Processing...' : 'Purchase Moving Plan'}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </form>
+            </div>
           </div>
         )}
       </div>

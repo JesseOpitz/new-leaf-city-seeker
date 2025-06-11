@@ -10,9 +10,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface MovingPlanQuestionnaireProps {
   onComplete: (data: any) => void;
   onCancel: () => void;
+  embedded?: boolean;
 }
 
-const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnaireProps) => {
+const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false }: MovingPlanQuestionnaireProps) => {
   const form = useForm({
     defaultValues: {
       timeline: "",
@@ -30,15 +31,22 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
     onComplete(data);
   };
 
-  return (
-    <div className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan</h3>
-      <p className="text-sm text-gray-500 mb-4">
-        This information helps us create a tailored plan. We don't store this data.
-        Feel free to select "Prefer not to say" for any question.
-      </p>
+  const ContentWrapper = embedded ? 'div' : ScrollArea;
+  const wrapperProps = embedded ? {} : { className: "h-[400px] pr-4 overflow-y-auto" };
 
-      <ScrollArea className="h-[400px] pr-4 overflow-y-auto">
+  return (
+    <div className={embedded ? "" : "p-6"}>
+      {!embedded && (
+        <>
+          <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            This information helps us create a tailored plan. We don't store this data.
+            Feel free to select "Prefer not to say" for any question.
+          </p>
+        </>
+      )}
+
+      <ContentWrapper {...wrapperProps}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Timeline Question */}
@@ -406,24 +414,37 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel }: MovingPlanQuestionnai
               )}
             />
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onCancel}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-leaf hover:bg-leaf-dark"
-              >
-                Complete Questionnaire
-              </Button>
-            </div>
+            {!embedded && (
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onCancel}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-leaf hover:bg-leaf-dark"
+                >
+                  Complete Questionnaire
+                </Button>
+              </div>
+            )}
+
+            {embedded && (
+              <div className="flex justify-end pt-4">
+                <Button 
+                  type="submit" 
+                  className="bg-leaf hover:bg-leaf-dark"
+                >
+                  Complete Questionnaire
+                </Button>
+              </div>
+            )}
           </form>
         </Form>
-      </ScrollArea>
+      </ContentWrapper>
     </div>
   );
 };

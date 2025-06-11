@@ -19,63 +19,55 @@ IMPORTANT: The user has provided additional personalization information. This mu
 
 Generate professional HTML content with appropriate <html>, <head>, and <body> tags. The plan must include:
 
-1. **Warm Welcome Message and Introductory Note** (minimum 500 words)
+1. **Warm Welcome Message and Introductory Note** (EXACTLY 400 words)
    - Personal greeting acknowledging their specific situation
    - ${questionnaire.additionalInfo ? 'Address their personal circumstances with empathy and understanding' : ''}
    - Expression of excitement for their journey to ${city}
    - Do not mention spscific dates since theynare only entering an approximate timeline.
 
-2. **Cultural Expectations, City Atmosphere, and General Vibe** (minimum 500 words)
+2. **Cultural Expectations, City Atmosphere, and General Vibe** (EXACTLY 400 words)
    - Detailed overview of ${city}'s culture and lifestyle
    - What makes this city unique
    - Social dynamics and community feel
    - Local customs and traditions
 
-3. **What to Expect Upon Arrival** (minimum 400 words)
+3. **What to Expect Upon Arrival** (EXACTLY 400 words)
    - First impressions and immediate experiences
    - Infrastructure and city layout
    - Transportation and accessibility
    - Initial adjustment considerations
 
-4. **Transition and Mental Preparation Tips** (minimum 400 words)
+4. **Transition and Mental Preparation Tips** (EXACTLY 400 words)
    - Psychological preparation for the move
    - Stress management strategies
    - Building resilience during transition
    - Maintaining connections to home
 
-5. **How This City Aligns with Their Reason for Moving** (minimum 400 words)
+5. **How This City Aligns with Their Reason for Moving** (EXACTLY 400 words)
    - Specific analysis based on their reason: ${questionnaire.reason}
    - Opportunities this city provides for their goals
    - Success stories and testimonials
    - Long-term benefits and potential
 
-6. **Support Groups and Social Meetup Ideas** (minimum 400 words)
+6. **Support Groups and Social Meetup Ideas** (EXACTLY 400 words)
    - Professional networking opportunities
    - Social clubs and hobby groups
    - Family-friendly communities (if applicable)
    - Online and offline networking platforms
 
-7. **Local Orientation Strategies** (minimum 400 words)
+7. **Local Orientation Strategies** (EXACTLY 400 words)
    - Neighborhood exploration guide
    - First-week survival tips
    - Essential locations to discover early
    - Building local knowledge quickly
 
-8. **Personalized Transitions** (minimum 400 words)
-   - Specific advice based on household size: ${questionnaire.householdSize} people
-   - Tailored recommendations for their moving reason
-   - Timeline considerations for their situation
-   - Success metrics for the first months
-
 FORMATTING REQUIREMENTS:
 - Include complete HTML structure with <html>, <head>, and <body> tags
-- Use clear section breaks with <div style="page-break-before: always;"></div>
+- Each section must be EXACTLY 400 words - no more, no less
 - Never include markdown code blocks like \`\`\`html
-- Ensure every section has enough detail to fill the page evenly
 - Write in a warm, helpful tone while maintaining professional formatting
 - Format all headers cleanly with proper HTML tags
 - Use semantic, clean HTML and responsive layout hints
-- Avoid unnecessary white space at the end of pages
 - Content must look polished and print-ready
 
 DO NOT wrap the output in code blocks. Return pure HTML only.
@@ -87,7 +79,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: "You are a professional relocation specialist who creates detailed, personalized moving guides. Always respond with well-formatted HTML that's ready for PDF conversion. Show genuine empathy for the user's situation and use any provided additional information extensively throughout the content."
+          content: "You are a professional relocation specialist who creates detailed, personalized moving guides. Always respond with well-formatted HTML that's ready for PDF conversion. Show genuine empathy for the user's situation and use any provided additional information extensively throughout the content. Each section must be EXACTLY 400 words."
         },
         {
           role: "user",
@@ -128,9 +120,9 @@ ${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.addition
 
 Generate professional HTML content with complete structure. Include:
 
-1. **Comprehensive Moving Checklist** (20-30 items minimum)
+1. **Comprehensive Moving Checklist** (Full page table with 20-30 items)
    - Format with checkboxes (☐) and helpful context
-   - Use 2-column layout with borders and headings
+   - Use professional table layout with borders and headings
    - Include sections for:
      * Financial Preparation
      * Documentation and Legal Tasks
@@ -141,33 +133,31 @@ Generate professional HTML content with complete structure. Include:
      * Personal and Family Readiness
    - Each item should be actionable and specific
 
-<div style="page-break-before: always;"></div>
-
-2. **30 Days Before Move** (minimum 500 words)
+2. **30 Days Before Move** (EXACTLY 400 words)
    - Detailed preparation tasks
    - Planning and organization priorities
    - Research and decision-making phase
    - Early action items
 
-3. **1 Week Before Move** (minimum 400 words)
+3. **1 Week Before Move** (EXACTLY 400 words)
    - Final preparations and confirmations
    - Last-minute tasks and reminders
    - Emergency planning and backup strategies
    - Final communication checklist
 
-4. **Move Day Strategy** (minimum 400 words)
+4. **Move Day Strategy** (EXACTLY 400 words)
    - Hour-by-hour moving day timeline
    - Coordination and communication plan
    - Problem-solving and contingency planning
    - Essential items and emergency kit
 
-5. **First Week After Move** (minimum 400 words)
+5. **First Week After Move** (EXACTLY 400 words)
    - Immediate settlement priorities
    - Essential services setup
    - Neighborhood exploration
    - Routine establishment
 
-6. **First 90 Days Integration Plan** (minimum 500 words)
+6. **First 90 Days Integration Plan** (EXACTLY 400 words)
    - Long-term settlement strategy
    - Community integration steps
    - Professional and social networking
@@ -175,10 +165,9 @@ Generate professional HTML content with complete structure. Include:
 
 FORMATTING REQUIREMENTS:
 - Include complete HTML structure with <html>, <head>, and <body> tags
-- Use clear section breaks with <div style="page-break-before: always;"></div>
+- Each section must be EXACTLY 400 words - no more, no less
 - Format checklist items with proper styling and borders
 - Never include markdown code blocks
-- Ensure every section fills pages evenly
 - Use clean tables and organized layouts
 - Write in a helpful, actionable tone
 - Make content print-ready and professional
@@ -192,7 +181,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: "You are a professional moving coordinator who creates detailed checklists and timelines. Always respond with well-formatted HTML that's ready for PDF conversion. Focus on actionable, practical advice."
+          content: "You are a professional moving coordinator who creates detailed checklists and timelines. Always respond with well-formatted HTML that's ready for PDF conversion. Focus on actionable, practical advice. Each section must be EXACTLY 400 words."
         },
         {
           role: "user",
@@ -232,7 +221,7 @@ ${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.addition
 
 Generate professional HTML content including:
 
-1. **Detailed Cost Breakdown for ${city}** (minimum 600 words)
+1. **Detailed Cost Breakdown for ${city}** (Full page table)
    - Comprehensive table with housing, utilities, transportation, healthcare, groceries, entertainment
    - Include low/medium/high ranges for each category
    - Monthly and yearly expense estimates
@@ -241,13 +230,13 @@ Generate professional HTML content including:
    - ${questionnaire.hasChildren ? 'Include childcare and education costs' : ''}
    - ${questionnaire.hasPets ? 'Include pet care and veterinary expenses' : ''}
 
-2. **Personalized Budget Analysis** (minimum 400 words)
+2. **Personalized Budget Analysis** (EXACTLY 400 words)
    - How their budget fits with ${city} costs
    - Optimization strategies for their situation
    - Saving opportunities and cost-cutting tips
    - Financial planning recommendations
 
-3. **Essential Local Resources Directory for ${city}** (minimum 600 words)
+3. **Essential Local Resources Directory for ${city}** (Full page table)
    - Format as clean tables with proper styling
    - Include real contact information and websites where possible
    - Minimum 15 entries covering:
@@ -259,14 +248,14 @@ Generate professional HTML content including:
      * ${questionnaire.hasChildren ? 'Childcare and Family Services' : ''}
      * ${questionnaire.hasPets ? 'Veterinary and Pet Services' : ''}
 
-4. **Community and Support Resources** (minimum 400 words)
+4. **Community and Support Resources** (EXACTLY 400 words)
    - LGBTQ+ and minority support groups
    - Women and family resources
    - Professional networking organizations
    - Cultural and recreational facilities
    - Emergency contacts and crisis resources
 
-5. **Neighborhood Recommendations** (minimum 400 words)
+5. **Neighborhood Recommendations** (EXACTLY 400 words)
    - Best areas based on their budget and needs
    - Transportation accessibility
    - Safety and security considerations
@@ -275,7 +264,7 @@ Generate professional HTML content including:
 FORMATTING REQUIREMENTS:
 - Include complete HTML structure with <html>, <head>, and <body> tags
 - Use professional table formatting with borders and styling
-- Clear section breaks with page-break-before
+- Each text section must be EXACTLY 400 words - no more, no less
 - Never include markdown code blocks
 - Ensure tables are readable and well-organized
 - Include actual URLs and contact information where possible
@@ -291,7 +280,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: "You are a financial planning and local resources specialist who creates comprehensive cost guides and resource directories. Always respond with well-formatted HTML that's ready for PDF conversion."
+          content: "You are a financial planning and local resources specialist who creates comprehensive cost guides and resource directories. Always respond with well-formatted HTML that's ready for PDF conversion. Each text section must be EXACTLY 400 words."
         },
         {
           role: "user",
@@ -321,7 +310,6 @@ const generateSeasonalGuide = async (city, questionnaire) => {
 Generate a professional seasonal guide for ${city} including climate, weather patterns, and local produce information.
 
 Personal Context:
-- Do the research to find the socific data to fill in the monthly temps and produce information.
 - Moving Date: ${questionnaire.movingDate}
 - Household Size: ${questionnaire.householdSize} people
 - Reason for Moving: ${questionnaire.reason}
@@ -331,7 +319,7 @@ ${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.addition
 
 Generate professional HTML content including:
 
-1. **Climate and Seasonal Experiences in ${city}** (minimum 600 words)
+1. **Climate and Seasonal Experiences in ${city}** (EXACTLY 400 words)
    - Comprehensive overview of the climate
    - What to expect each season
    - Seasonal lifestyle changes and adaptations
@@ -339,44 +327,34 @@ Generate professional HTML content including:
    - ${questionnaire.hasChildren ? 'Seasonal considerations for families with children' : ''}
    - ${questionnaire.hasPets ? 'Weather impact on pets and seasonal pet care' : ''}
 
-<div style="page-break-before: always;"></div>
-
-2. **Monthly Temperature Chart** 
+2. **Monthly Temperature Chart** (Full page table)
    - Professional table with monthly highs and lows
-   - Clean 2-column layout with background-shaded rows
+   - Clean layout with background-shaded rows
    - Include humidity and precipitation data
    - Seasonal activity recommendations
 
-<div style="page-break-before: always;"></div>
-
-3. **Packing and Seasonal Adjustment Guide** (minimum 500 words)
+3. **Packing and Seasonal Adjustment Guide** (EXACTLY 400 words)
    - What clothing and items to bring for each season
    - Seasonal preparation tips
    - Home preparation for different weather patterns
    - Energy costs and utility considerations
    - Storage and organization strategies
 
-<div style="page-break-before: always;"></div>
-
-4. **Local Produce and Food Seasonality** (minimum 500 words)
+4. **Local Produce and Food Seasonality** (Full page table with EXACTLY 400 words description)
    - Seasonal fruits and vegetables table by month
    - Farmer's market recommendations and schedules
    - Local food specialties and seasonal dishes
    - Tips for healthy and affordable seasonal eating
    - Food preservation and storage advice
 
-<div style="page-break-before: always;"></div>
-
-5. **Seasonal Events and Activities** (minimum 400 words)
+5. **Seasonal Events and Activities** (EXACTLY 400 words)
    - Annual festivals and community events
    - Seasonal recreational opportunities
    - Cultural activities throughout the year
    - ${questionnaire.hasChildren ? 'Family-friendly seasonal activities and events' : ''}
    - Networking and social opportunities by season
 
-<div style="page-break-before: always;"></div>
-
-6. **Seasonal Living Tips and Pros/Cons** (minimum 400 words)
+6. **Seasonal Living Tips and Pros/Cons** (EXACTLY 400 words)
    - Advantages and challenges of each season
    - Cost considerations throughout the year
    - Health and wellness seasonal tips
@@ -386,7 +364,7 @@ FORMATTING REQUIREMENTS:
 - Include complete HTML structure with <html>, <head>, and <body> tags
 - Beautiful, inspiring, and clean styling
 - Professional table formatting for temperature and produce data
-- Clear section breaks with page-break-before
+- Each text section must be EXACTLY 400 words - no more, no less
 - Never include markdown code blocks
 - Use attractive color schemes and typography
 - Make tables readable with proper borders and spacing
@@ -401,7 +379,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: "You are a climate and seasonal living specialist who creates beautiful, comprehensive seasonal guides. Always respond with well-formatted HTML that's ready for PDF conversion with attractive styling."
+          content: "You are a climate and seasonal living specialist who creates beautiful, comprehensive seasonal guides. Always respond with well-formatted HTML that's ready for PDF conversion with attractive styling. Each text section must be EXACTLY 400 words."
         },
         {
           role: "user",
@@ -448,7 +426,7 @@ ${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.addition
 Generate professional HTML content including:
 
 ${hasChildren ? `
-1. **Complete Children's Relocation Guide** (minimum 600 words)
+1. **Complete Children's Relocation Guide** (EXACTLY 400 words)
    - Age-appropriate preparation strategies
    - School enrollment and educational transition
    - Healthcare and pediatric services in ${city}
@@ -456,18 +434,14 @@ ${hasChildren ? `
    - Activity and entertainment options
    - Childcare and babysitting resources
 
-<div style="page-break-before: always;"></div>
-
-2. **Educational Resources and Schools in ${city}** (minimum 500 words)
+2. **Educational Resources and Schools in ${city}** (EXACTLY 400 words)
    - Public and private school options
    - Registration requirements and timelines
    - Special needs and gifted programs
    - Extracurricular activities and sports
    - Parent involvement opportunities
 
-<div style="page-break-before: always;"></div>
-
-3. **Child-Friendly Neighborhoods and Activities** (minimum 400 words)
+3. **Child-Friendly Neighborhoods and Activities** (EXACTLY 400 words)
    - Best family neighborhoods in ${city}
    - Parks, playgrounds, and recreational facilities
    - Libraries and educational centers
@@ -476,9 +450,7 @@ ${hasChildren ? `
 ` : ''}
 
 ${hasPets ? `
-${hasChildren ? '<div style="page-break-before: always;"></div>' : ''}
-
-${hasChildren ? '4' : '1'}. **Comprehensive Pet Relocation Guide** (minimum 600 words)
+${hasChildren ? '4' : '1'}. **Comprehensive Pet Relocation Guide** (EXACTLY 400 words)
    - Pre-move veterinary preparations
    - Travel arrangements and safety
    - Pet registration and licensing in ${city}
@@ -486,9 +458,7 @@ ${hasChildren ? '4' : '1'}. **Comprehensive Pet Relocation Guide** (minimum 600 
    - Pet-friendly housing considerations
    - Local pet regulations and leash laws
 
-<div style="page-break-before: always;"></div>
-
-${hasChildren ? '5' : '2'}. **Pet Services and Resources in ${city}** (minimum 500 words)
+${hasChildren ? '5' : '2'}. **Pet Services and Resources in ${city}** (EXACTLY 400 words)
    - Veterinary clinics and animal hospitals
    - Pet stores and supply shops
    - Grooming and boarding services
@@ -496,9 +466,7 @@ ${hasChildren ? '5' : '2'}. **Pet Services and Resources in ${city}** (minimum 5
    - Pet training and behavioral services
    - Emergency veterinary care
 
-<div style="page-break-before: always;"></div>
-
-${hasChildren ? '6' : '3'}. **Pet-Friendly Living in ${city}** (minimum 400 words)
+${hasChildren ? '6' : '3'}. **Pet-Friendly Living in ${city}** (EXACTLY 400 words)
    - Pet-friendly neighborhoods and housing
    - Local pet community and social opportunities
    - Seasonal pet care considerations
@@ -507,9 +475,7 @@ ${hasChildren ? '6' : '3'}. **Pet-Friendly Living in ${city}** (minimum 400 word
 ` : ''}
 
 ${hasChildren && hasPets ? `
-<div style="page-break-before: always;"></div>
-
-7. **Family and Pet Integration Strategies** (minimum 400 words)
+7. **Family and Pet Integration Strategies** (EXACTLY 400 words)
    - Managing both children and pets during the move
    - Creating routines that work for the whole family
    - Safety considerations with children and pets
@@ -520,7 +486,7 @@ ${hasChildren && hasPets ? `
 FORMATTING REQUIREMENTS:
 - Include complete HTML structure with <html>, <head>, and <body> tags
 - Professional, family-friendly styling
-- Clear section breaks with page-break-before
+- Each section must be EXACTLY 400 words - no more, no less
 - Never include markdown code blocks
 - Include practical tables and resource lists
 - Warm, supportive tone while maintaining professionalism
@@ -536,7 +502,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: `You are a family relocation specialist who creates comprehensive guides for ${hasChildren && hasPets ? 'families with children and pets' : hasChildren ? 'families with children' : 'pet owners'}. Always respond with well-formatted HTML that's ready for PDF conversion with warm, supportive guidance.`
+          content: `You are a family relocation specialist who creates comprehensive guides for ${hasChildren && hasPets ? 'families with children and pets' : hasChildren ? 'families with children' : 'pet owners'}. Always respond with well-formatted HTML that's ready for PDF conversion with warm, supportive guidance. Each section must be EXACTLY 400 words.`
         },
         {
           role: "user",
