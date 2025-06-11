@@ -52,7 +52,7 @@ router.post('/generate-plan', async (req, res) => {
       console.log('🤖 Generating Welcome & Introduction content...');
       const welcomeHTML = await generateWelcomeAndIntroduction(city, questionnaire);
       const welcomeFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-welcome-guide.pdf`);
-      const welcomePDFPath = await generatePDF(welcomeHTML, welcomeFilename, cityName, stateName);
+      const welcomePDFPath = await generatePDF(welcomeHTML, welcomeFilename, cityName, stateName, 'welcome');
       generatedPDFs.push({
         path: welcomePDFPath,
         filename: welcomeFilename,
@@ -69,7 +69,7 @@ router.post('/generate-plan', async (req, res) => {
       console.log('🤖 Generating Checklist & Timeline content...');
       const checklistHTML = await generateChecklistAndTimeline(city, questionnaire);
       const checklistFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-checklist-timeline.pdf`);
-      const checklistPDFPath = await generatePDF(checklistHTML, checklistFilename, cityName, stateName);
+      const checklistPDFPath = await generatePDF(checklistHTML, checklistFilename, cityName, stateName, 'checklist');
       generatedPDFs.push({
         path: checklistPDFPath,
         filename: checklistFilename,
@@ -86,7 +86,7 @@ router.post('/generate-plan', async (req, res) => {
       console.log('🤖 Generating Costs & Resources content...');
       const costsHTML = await generateCostsAndResources(city, questionnaire);
       const costsFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-costs-resources.pdf`);
-      const costsPDFPath = await generatePDF(costsHTML, costsFilename, cityName, stateName);
+      const costsPDFPath = await generatePDF(costsHTML, costsFilename, cityName, stateName, 'costs');
       generatedPDFs.push({
         path: costsPDFPath,
         filename: costsFilename,
@@ -103,7 +103,7 @@ router.post('/generate-plan', async (req, res) => {
       console.log('🤖 Generating Seasonal Guide content...');
       const seasonalHTML = await generateSeasonalGuide(city, questionnaire);
       const seasonalFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-seasonal-guide.pdf`);
-      const seasonalPDFPath = await generatePDF(seasonalHTML, seasonalFilename, cityName, stateName);
+      const seasonalPDFPath = await generatePDF(seasonalHTML, seasonalFilename, cityName, stateName, 'seasonal');
       generatedPDFs.push({
         path: seasonalPDFPath,
         filename: seasonalFilename,
@@ -122,7 +122,7 @@ router.post('/generate-plan', async (req, res) => {
         const familyHTML = await generateChildrenAndPetsGuide(city, questionnaire);
         if (familyHTML) {
           const familyFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-family-pets-guide.pdf`);
-          const familyPDFPath = await generatePDF(familyHTML, familyFilename, cityName, stateName);
+          const familyPDFPath = await generatePDF(familyHTML, familyFilename, cityName, stateName, 'family');
           generatedPDFs.push({
             path: familyPDFPath,
             filename: familyFilename,

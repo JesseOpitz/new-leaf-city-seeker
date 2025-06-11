@@ -4,28 +4,78 @@ const chromiumBundle = require('@sparticuz/chromium');
 const path = require('path');
 const fs = require('fs').promises;
 
-const generatePDF = async (htmlContent, filename, city = '', state = '') => {
+const generatePDF = async (htmlContent, filename, city = '', state = '', documentType = 'welcome') => {
   let browser;
 
   try {
     console.log('📄 Starting PDF generation...');
     if (!htmlContent || !filename) throw new Error('Missing content or filename');
 
-    // Define the content list for the title page
-    const content_list = [
-      'Personalized Welcome & Overview',
-      'Pre-Move Checklist',
-      'Detailed Cost of Living',
-      'Moving Companies & Transportation Options',
-      '30-60-90 Day Relocation Plan',
-      'Local Services & Community',
-      'Food & Produce',
-      'Weather and Seasonal Adaptation',
-      'Eco-Conscious Moving Tips',
-      'Satisfaction Guarantee'
-    ];
+    // Define content lists for different document types
+    const contentLists = {
+      welcome: [
+        'Personalized Welcome & Overview',
+        'Cultural Expectations & City Atmosphere',
+        'What to Expect Upon Arrival',
+        'Transition & Mental Preparation Tips',
+        'Support Groups & Social Meetup Ideas',
+        'Local Orientation Strategies',
+        'Neighborhood Guides & First-Week Advice'
+      ],
+      checklist: [
+        'Comprehensive Moving Checklist (20+ Items)',
+        'Financial Preparation Tasks',
+        'Packing & Organization Guide',
+        'Pet & Children-Specific Tasks',
+        'Utilities & Services Setup',
+        '30-Day Preparation Timeline',
+        '60-Day Preparation Timeline',
+        '90-Day Preparation Timeline'
+      ],
+      costs: [
+        'Detailed Cost Breakdown by Category',
+        'Housing & Utilities Estimates',
+        'Transportation & Healthcare Costs',
+        'Groceries & Entertainment Budget',
+        'Emergency Fund Recommendations',
+        'Local Resources Directory',
+        'Essential Services & Contacts',
+        'Community Support Groups'
+      ],
+      seasonal: [
+        'Climate & Seasonal Overview',
+        'Monthly Temperature Charts',
+        'Seasonal Packing Suggestions',
+        'Local Produce & Harvest Calendar',
+        'Farmers Market Guide',
+        'Seasonal Events & Activities',
+        'Weather Adaptation Tips'
+      ],
+      family: [
+        'School District Information',
+        'Childcare & Educational Resources',
+        'Family-Friendly Activities',
+        'Pediatric Healthcare Providers',
+        'Pet Services & Veterinarians',
+        'Pet-Friendly Parks & Activities',
+        'Family Safety & Community Info'
+      ]
+    };
 
-    const titlePageHTML = `
+    const documentTitles = {
+      welcome: `Welcome to ${city}, ${state}`,
+      checklist: `Moving Checklist & Timeline for ${city}`,
+      costs: `Cost Overview & Local Resources for ${city}`,
+      seasonal: `Seasonal Living Guide for ${city}`,
+      family: `Family & Pet Guide for ${city}`
+    };
+
+    // Get the appropriate content list and title
+    const content_list = contentLists[documentType] || contentLists.welcome;
+    const documentTitle = documentTitles[documentType] || documentTitles.welcome;
+
+    // Create title page HTML based on document type
+    const titlePageHTML = documentType === 'welcome' ? `
       <div style="
         height: 100vh; 
         display: flex; 
@@ -58,7 +108,50 @@ const generatePDF = async (htmlContent, filename, city = '', state = '') => {
           margin-bottom: 25px;
           font-weight: 500;
         ">
-          In this plan, you will find the following:
+          In this welcome guide, you will find:
+        </p>
+        
+        <ol style="
+          font-size: 16px; 
+          color: #333; 
+          text-align: left; 
+          max-width: 500px; 
+          line-height: 1.6;
+          padding-left: 20px;
+        ">
+          ${content_list.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+        </ol>
+      </div>
+    ` : `
+      <div style="
+        height: 100vh; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        text-align: center; 
+        padding: 40px 20px;
+        page-break-after: always;
+      ">
+        <h1 style="
+          color: #2c5530; 
+          font-size: 32px; 
+          margin-bottom: 40px; 
+          line-height: 1.4;
+          max-width: 600px;
+          border-bottom: 3px solid #7fb069;
+          padding-bottom: 20px;
+        ">
+          ${documentTitle}
+        </h1>
+        
+        <p style="
+          font-size: 18px; 
+          color: #333; 
+          margin-bottom: 25px;
+          font-weight: 500;
+        ">
+          This guide includes:
         </p>
         
         <ol style="
@@ -80,7 +173,7 @@ const generatePDF = async (htmlContent, filename, city = '', state = '') => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Moving Plan</title>
+        <title>${documentTitle}</title>
         <style>
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -160,6 +253,14 @@ const generatePDF = async (htmlContent, filename, city = '', state = '') => {
             color: #6c757d;
             border-top: 1px solid #dee2e6;
             padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+          }
+          .satisfaction-guarantee {
+            color: #22c55e;
+            font-weight: 600;
+            font-size: 15px;
           }
           
           /* Media queries for content overflow prevention */
@@ -185,7 +286,12 @@ const generatePDF = async (htmlContent, filename, city = '', state = '') => {
         </div>
         ${htmlContent}
         <div class="footer">
-          <p>Generated by New Leaf • Visit us at new-leaf.net</p>
+          <div class="satisfaction-guarantee">
+            100% Satisfaction Guarantee - We stand behind our personalized moving plans
+          </div>
+          <div>
+            Generated by New Leaf • Visit us at new-leaf.net
+          </div>
         </div>
       </body>
       </html>
