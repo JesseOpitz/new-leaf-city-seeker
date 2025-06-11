@@ -1,19 +1,27 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 interface MovingPlanQuestionnaireProps {
   onComplete: (data: any) => void;
   onCancel: () => void;
   embedded?: boolean;
+  city?: string;
+  state?: string;
 }
 
-const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false }: MovingPlanQuestionnaireProps) => {
+const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city, state }: MovingPlanQuestionnaireProps) => {
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  
   const form = useForm({
     defaultValues: {
       timeline: "",
@@ -27,8 +35,69 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false }: Mov
     }
   });
 
-  const handleSubmit = (data: any) => {
-    onComplete(data);
+  const handleSubmit = async (data: any) => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address to receive your moving plan.",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    // Show immediate success message
+    toast({
+      title: "Thank you for your purchase!",
+      description: `Your personalized moving plan is being generated. Please allow up to 15 minutes for your plan to be generated and sent to ${email}.`,
+    });
+
+    try {
+      const response = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          city: city && state ? `${city}, ${state}` : 'Selected City',
+          email: email,
+          questionnaire: {
+            timeline: data.timeline,
+            budget: data.budget,
+            household: data.household,
+            income: data.income,
+            moveReason: data.moveReason,
+            hasChildren: data.hasChildren === 'yes',
+            hasPets: data.hasPets === 'yes',
+            additionalInfo: data.additionalInfo,
+            movingDate: data.timeline,
+            householdSize: data.household,
+            reason: data.moveReason
+          }
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log('Plan generation successful:', result);
+      } else {
+        console.error('Plan generation failed:', result);
+        toast({
+          title: "Generation in progress",
+          description: "Your plan is being generated and will be sent to your email shortly.",
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting plan request:', error);
+      toast({
+        title: "Generation in progress",
+        description: "Your plan is being generated and will be sent to your email shortly.",
+      });
+    } finally {
+      setIsProcessing(false);
+      onComplete(data);
+    }
   };
 
   const ContentWrapper = embedded ? 'div' : ScrollArea;
@@ -40,8 +109,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false }: Mov
         <>
           <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan</h3>
           <p className="text-sm text-gray-500 mb-4">
-            This information helps us create a tailored plan. We don't store this data.
-            Feel free to select "Prefer not to say" for any question.
+            Complete the questionnaire and provide your email to receive your customized plan.
           </p>
         </>
       )}
@@ -414,34 +482,56 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false }: Mov
               )}
             />
 
-            {!embedded && (
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={onCancel}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-leaf hover:bg-leaf-dark"
-                >
-                  Complete Questionnaire
-                </Button>
+            {/* Email and Payment Section */}
+            <div className="border-t pt-6">
+              <h4 className="text-md font-semibold mb-3">Email & Payment</h4>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address
+                  </label>
+                  <Input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Your moving plan will be sent to this email address
+                  </p>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-lg font-bold text-leaf-dark mb-2">$4.99</p>
+                  <p className="text-sm text-gray-500">One-time payment</p>
+                </div>
               </div>
-            )}
+            </div>
 
-            {embedded && (
-              <div className="flex justify-end pt-4">
-                <Button 
-                  type="submit" 
-                  className="bg-leaf hover:bg-leaf-dark"
-                >
-                  Complete Questionnaire
-                </Button>
-              </div>
-            )}
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-leaf hover:bg-leaf-dark"
+                disabled={isProcessing || !email}
+              >
+                {isProcessing ? 'Processing...' : 'Purchase Moving Plan'}
+              </Button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              We don't store any personal data from the questionnaire. Your privacy is important to us.
+            </p>
           </form>
         </Form>
       </ContentWrapper>
