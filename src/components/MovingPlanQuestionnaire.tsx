@@ -20,6 +20,7 @@ interface MovingPlanQuestionnaireProps {
 const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city, state }: MovingPlanQuestionnaireProps) => {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
   const form = useForm({
@@ -36,10 +37,32 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
   });
 
   const handleSubmit = async (data: any) => {
+    console.log('Form submission started', { email, confirmEmail, data });
+    
     if (!email) {
       toast({
         title: "Email Required",
         description: "Please enter your email address to receive your moving plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (email !== confirmEmail) {
+      toast({
+        title: "Email Mismatch",
+        description: "Please make sure both email addresses match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if all required fields are filled
+    if (!data.timeline || !data.budget || !data.household || !data.income || !data.moveReason || !data.hasChildren || !data.hasPets) {
+      toast({
+        title: "Please Complete All Fields",
+        description: "All questions must be answered to generate your personalized plan.",
+        variant: "destructive",
       });
       return;
     }
@@ -53,31 +76,39 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
     });
 
     try {
+      console.log('Making API call to generate plan...');
+      
+      const requestBody = {
+        city: city && state ? `${city}, ${state}` : 'Selected City',
+        email: email,
+        questionnaire: {
+          timeline: data.timeline,
+          budget: data.budget,
+          household: data.household,
+          income: data.income,
+          moveReason: data.moveReason,
+          hasChildren: data.hasChildren === 'yes',
+          hasPets: data.hasPets === 'yes',
+          additionalInfo: data.additionalInfo,
+          movingDate: data.timeline,
+          householdSize: data.household,
+          reason: data.moveReason
+        }
+      };
+
+      console.log('Request body:', requestBody);
+
       const response = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          city: city && state ? `${city}, ${state}` : 'Selected City',
-          email: email,
-          questionnaire: {
-            timeline: data.timeline,
-            budget: data.budget,
-            household: data.household,
-            income: data.income,
-            moveReason: data.moveReason,
-            hasChildren: data.hasChildren === 'yes',
-            hasPets: data.hasPets === 'yes',
-            additionalInfo: data.additionalInfo,
-            movingDate: data.timeline,
-            householdSize: data.household,
-            reason: data.moveReason
-          }
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('API response status:', response.status);
       const result = await response.json();
+      console.log('API response:', result);
       
       if (response.ok) {
         console.log('Plan generation successful:', result);
@@ -127,7 +158,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="timeline"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>When are you planning to move?</FormLabel>
+                  <FormLabel>When are you planning to move? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -182,7 +213,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="budget"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>What is your approximate moving budget?</FormLabel>
+                  <FormLabel>What is your approximate moving budget? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -237,7 +268,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="household"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>How many people will be moving with you?</FormLabel>
+                  <FormLabel>How many people will be moving with you? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -286,7 +317,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="income"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>What is your approximate household income?</FormLabel>
+                  <FormLabel>What is your approximate household income? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -335,7 +366,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="moveReason"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>What is the primary reason for your move?</FormLabel>
+                  <FormLabel>What is the primary reason for your move? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -396,7 +427,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="hasChildren"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Are you travelling with children?</FormLabel>
+                  <FormLabel>Are you travelling with children? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -433,7 +464,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               name="hasPets"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Are you travelling with pets?</FormLabel>
+                  <FormLabel>Are you travelling with pets? *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -492,7 +523,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               <div className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
+                    Email Address *
                   </label>
                   <Input
                     type="email"
@@ -506,6 +537,26 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
                   <p className="text-xs text-gray-500 mt-1">
                     Your moving plan will be sent to this email address
                   </p>
+                </div>
+
+                <div>
+                  <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Email Address *
+                  </label>
+                  <Input
+                    type="email"
+                    id="confirmEmail"
+                    value={confirmEmail}
+                    onChange={(e) => setConfirmEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="w-full"
+                  />
+                  {email && confirmEmail && email !== confirmEmail && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Email addresses do not match
+                    </p>
+                  )}
                 </div>
                 
                 <div className="text-center">
@@ -527,7 +578,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
               <Button 
                 type="submit" 
                 className="bg-leaf hover:bg-leaf-dark"
-                disabled={isProcessing || !email}
+                disabled={isProcessing || !email || !confirmEmail || email !== confirmEmail}
               >
                 {isProcessing ? 'Processing...' : 'Purchase Moving Plan'}
               </Button>
