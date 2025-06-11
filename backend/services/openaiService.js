@@ -23,8 +23,7 @@ Generate professional HTML content with appropriate <html>, <head>, and <body> t
    - Personal greeting acknowledging their specific situation
    - ${questionnaire.additionalInfo ? 'Address their personal circumstances with empathy and understanding' : ''}
    - Expression of excitement for their journey to ${city}
-
-<div style="page-break-before: always;"></div>
+   - Do not mention spscific dates since theynare only entering an approximate timeline.
 
 2. **Cultural Expectations, City Atmosphere, and General Vibe** (minimum 500 words)
    - Detailed overview of ${city}'s culture and lifestyle
@@ -32,15 +31,11 @@ Generate professional HTML content with appropriate <html>, <head>, and <body> t
    - Social dynamics and community feel
    - Local customs and traditions
 
-<div style="page-break-before: always;"></div>
-
 3. **What to Expect Upon Arrival** (minimum 400 words)
    - First impressions and immediate experiences
    - Infrastructure and city layout
    - Transportation and accessibility
    - Initial adjustment considerations
-
-<div style="page-break-before: always;"></div>
 
 4. **Transition and Mental Preparation Tips** (minimum 400 words)
    - Psychological preparation for the move
@@ -48,15 +43,11 @@ Generate professional HTML content with appropriate <html>, <head>, and <body> t
    - Building resilience during transition
    - Maintaining connections to home
 
-<div style="page-break-before: always;"></div>
-
 5. **How This City Aligns with Their Reason for Moving** (minimum 400 words)
    - Specific analysis based on their reason: ${questionnaire.reason}
    - Opportunities this city provides for their goals
    - Success stories and testimonials
    - Long-term benefits and potential
-
-<div style="page-break-before: always;"></div>
 
 6. **Support Groups and Social Meetup Ideas** (minimum 400 words)
    - Professional networking opportunities
@@ -64,15 +55,11 @@ Generate professional HTML content with appropriate <html>, <head>, and <body> t
    - Family-friendly communities (if applicable)
    - Online and offline networking platforms
 
-<div style="page-break-before: always;"></div>
-
 7. **Local Orientation Strategies** (minimum 400 words)
    - Neighborhood exploration guide
    - First-week survival tips
    - Essential locations to discover early
    - Building local knowledge quickly
-
-<div style="page-break-before: always;"></div>
 
 8. **Personalized Transitions** (minimum 400 words)
    - Specific advice based on household size: ${questionnaire.householdSize} people
@@ -162,15 +149,11 @@ Generate professional HTML content with complete structure. Include:
    - Research and decision-making phase
    - Early action items
 
-<div style="page-break-before: always;"></div>
-
 3. **1 Week Before Move** (minimum 400 words)
    - Final preparations and confirmations
    - Last-minute tasks and reminders
    - Emergency planning and backup strategies
    - Final communication checklist
-
-<div style="page-break-before: always;"></div>
 
 4. **Move Day Strategy** (minimum 400 words)
    - Hour-by-hour moving day timeline
@@ -178,15 +161,11 @@ Generate professional HTML content with complete structure. Include:
    - Problem-solving and contingency planning
    - Essential items and emergency kit
 
-<div style="page-break-before: always;"></div>
-
 5. **First Week After Move** (minimum 400 words)
    - Immediate settlement priorities
    - Essential services setup
    - Neighborhood exploration
    - Routine establishment
-
-<div style="page-break-before: always;"></div>
 
 6. **First 90 Days Integration Plan** (minimum 500 words)
    - Long-term settlement strategy
@@ -262,15 +241,11 @@ Generate professional HTML content including:
    - ${questionnaire.hasChildren ? 'Include childcare and education costs' : ''}
    - ${questionnaire.hasPets ? 'Include pet care and veterinary expenses' : ''}
 
-<div style="page-break-before: always;"></div>
-
 2. **Personalized Budget Analysis** (minimum 400 words)
    - How their budget fits with ${city} costs
    - Optimization strategies for their situation
    - Saving opportunities and cost-cutting tips
    - Financial planning recommendations
-
-<div style="page-break-before: always;"></div>
 
 3. **Essential Local Resources Directory for ${city}** (minimum 600 words)
    - Format as clean tables with proper styling
@@ -284,16 +259,12 @@ Generate professional HTML content including:
      * ${questionnaire.hasChildren ? 'Childcare and Family Services' : ''}
      * ${questionnaire.hasPets ? 'Veterinary and Pet Services' : ''}
 
-<div style="page-break-before: always;"></div>
-
 4. **Community and Support Resources** (minimum 400 words)
    - LGBTQ+ and minority support groups
    - Women and family resources
    - Professional networking organizations
    - Cultural and recreational facilities
    - Emergency contacts and crisis resources
-
-<div style="page-break-before: always;"></div>
 
 5. **Neighborhood Recommendations** (minimum 400 words)
    - Best areas based on their budget and needs
@@ -350,6 +321,7 @@ const generateSeasonalGuide = async (city, questionnaire) => {
 Generate a professional seasonal guide for ${city} including climate, weather patterns, and local produce information.
 
 Personal Context:
+- Do the research to find the socific data to fill in the monthly temps and produce information.
 - Moving Date: ${questionnaire.movingDate}
 - Household Size: ${questionnaire.householdSize} people
 - Reason for Moving: ${questionnaire.reason}
