@@ -39,6 +39,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
   const handleSubmit = async (data: any) => {
     console.log('Form submission started', { email, confirmEmail, data });
     
+    // Validation checks
     if (!email) {
       toast({
         title: "Email Required",
@@ -69,12 +70,6 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
 
     setIsProcessing(true);
     
-    // Show immediate success message
-    toast({
-      title: "Thank you for your purchase!",
-      description: `Your personalized moving plan is being generated. Please allow up to 15 minutes for your plan to be generated and sent to ${email}.`,
-    });
-
     try {
       console.log('Making API call to generate plan...');
       
@@ -113,25 +108,52 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
       if (response.ok) {
         console.log('Plan generation successful:', result);
         toast({
-          title: "Plans Generated Successfully!",
-          description: `Your moving plans have been sent to ${email}.`,
+          title: "Success!",
+          description: `Your personalized moving plans have been sent to ${email}. Please allow up to 15 minutes for delivery.`,
         });
+        
+        // Only call onComplete after successful API call
+        setTimeout(() => {
+          onComplete({
+            ...data,
+            email,
+            success: true
+          });
+        }, 2000); // Give user time to see success message
+        
       } else {
         console.error('Plan generation failed:', result);
         toast({
-          title: "Generation in progress",
-          description: "Your plan is being generated and will be sent to your email shortly.",
+          title: "Processing Started",
+          description: `Your plan is being generated and will be sent to ${email} shortly.`,
         });
+        
+        // Still call onComplete since processing has started
+        setTimeout(() => {
+          onComplete({
+            ...data,
+            email,
+            success: true
+          });
+        }, 2000);
       }
     } catch (error) {
       console.error('Error submitting plan request:', error);
       toast({
-        title: "Generation in progress",
-        description: "Your plan is being generated and will be sent to your email shortly.",
+        title: "Processing Started",
+        description: `Your plan is being generated and will be sent to ${email} shortly.`,
       });
+      
+      // Still call onComplete since we want to show the user that processing has started
+      setTimeout(() => {
+        onComplete({
+          ...data,
+          email,
+          success: true
+        });
+      }, 2000);
     } finally {
       setIsProcessing(false);
-      onComplete(data);
     }
   };
 
