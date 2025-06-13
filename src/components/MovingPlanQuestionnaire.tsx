@@ -37,28 +37,16 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
   });
 
   const handleSubmit = async (data: any) => {
-    console.log('Form submission started', { email, confirmEmail, data });
-    
     // Validation checks
-    if (!email) {
+    if (!email || email !== confirmEmail) {
       toast({
         title: "Email Required",
-        description: "Please enter your email address to receive your moving plan.",
+        description: "Please enter and confirm your email address.",
         variant: "destructive",
       });
       return;
     }
 
-    if (email !== confirmEmail) {
-      toast({
-        title: "Email Mismatch",
-        description: "Please make sure both email addresses match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if all required fields are filled
     if (!data.timeline || !data.budget || !data.household || !data.income || !data.moveReason || !data.hasChildren || !data.hasPets) {
       toast({
         title: "Please Complete All Fields",
@@ -71,8 +59,6 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
     setIsProcessing(true);
     
     try {
-      console.log('Making API call to backend server...');
-      
       const requestBody = {
         city: city && state ? `${city}, ${state}` : 'Selected City',
         email: email,
@@ -84,89 +70,59 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
           moveReason: data.moveReason,
           hasChildren: data.hasChildren === 'yes',
           hasPets: data.hasPets === 'yes',
-          additionalInfo: data.additionalInfo,
-          movingDate: data.timeline,
-          householdSize: data.household,
-          reason: data.moveReason
+          additionalInfo: data.additionalInfo
         }
       };
 
-      console.log('Request body:', requestBody);
+      const response = await fetch('http://localhost:3001/api/generate-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-      // Try the backend server first (port 3001)
-      let response;
-      try {
-        response = await fetch('http://localhost:3001/api/generate-plan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
-        console.log('Backend server response status:', response.status);
-      } catch (backendError) {
-        console.log('Backend server not available, trying frontend API...');
-        // Fallback to frontend API route
-        response = await fetch('/api/generate-plan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
-        console.log('Frontend API response status:', response.status);
-      }
-
-      const result = await response.json();
-      console.log('API response:', result);
-      
       if (response.ok) {
-        console.log('Plan generation successful:', result);
         toast({
           title: "Success!",
-          description: `Your personalized moving plans have been sent to ${email}. Please allow up to 15 minutes for delivery.`,
+          description: `Your personalized moving plans have been sent to ${email}.`,
         });
         
-        // Only call onComplete after successful API call
         setTimeout(() => {
           onComplete({
             ...data,
             email,
             success: true
           });
-        }, 2000); // Give user time to see success message
+        }, 1500);
         
       } else {
-        console.error('Plan generation failed:', result);
         toast({
           title: "Processing Started",
           description: `Your plan is being generated and will be sent to ${email} shortly.`,
         });
         
-        // Still call onComplete since processing has started
         setTimeout(() => {
           onComplete({
             ...data,
             email,
             success: true
           });
-        }, 2000);
+        }, 1500);
       }
     } catch (error) {
-      console.error('Error submitting plan request:', error);
       toast({
         title: "Processing Started",
         description: `Your plan is being generated and will be sent to ${email} shortly.`,
       });
       
-      // Still call onComplete since we want to show the user that processing has started
       setTimeout(() => {
         onComplete({
           ...data,
           email,
           success: true
         });
-      }, 2000);
+      }, 1500);
     } finally {
       setIsProcessing(false);
     }
