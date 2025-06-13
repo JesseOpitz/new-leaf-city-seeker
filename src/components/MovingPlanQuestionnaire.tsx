@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +36,15 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
   });
 
   const handleSubmit = async (data: any) => {
+    console.log('🚀 STARTING PLAN GENERATION PROCESS');
+    console.log('📝 Form data received:', data);
+    console.log('📧 Email:', email);
+    console.log('🏙️ City:', city);
+    console.log('🏛️ State:', state);
+
     // Validation checks
     if (!email || email !== confirmEmail) {
+      console.log('❌ Email validation failed');
       toast({
         title: "Email Required",
         description: "Please enter and confirm your email address.",
@@ -48,6 +54,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
     }
 
     if (!data.timeline || !data.budget || !data.household || !data.income || !data.moveReason || !data.hasChildren || !data.hasPets) {
+      console.log('❌ Form validation failed');
       toast({
         title: "Please Complete All Fields",
         description: "All questions must be answered to generate your personalized plan.",
@@ -56,6 +63,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
       return;
     }
 
+    console.log('✅ Validation passed, starting API call');
     setIsProcessing(true);
     
     try {
@@ -74,7 +82,9 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         }
       };
 
-      // Use the correct API endpoint that matches the backend
+      console.log('📤 Request body being sent:', JSON.stringify(requestBody, null, 2));
+      console.log('🌐 Making API call to /api/generate-plan');
+
       const response = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: {
@@ -83,7 +93,15 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         body: JSON.stringify(requestBody),
       });
 
+      console.log('📡 Response received:', response);
+      console.log('📊 Response status:', response.status);
+      console.log('📋 Response ok:', response.ok);
+
       if (response.ok) {
+        console.log('✅ API call successful');
+        const responseData = await response.json();
+        console.log('📄 Response data:', responseData);
+        
         toast({
           title: "Success!",
           description: `Your personalized moving plans have been sent to ${email}.`,
@@ -98,6 +116,10 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         }, 1500);
         
       } else {
+        console.log('⚠️ API call failed but proceeding with fallback');
+        const errorText = await response.text();
+        console.log('❌ Error response:', errorText);
+        
         toast({
           title: "Processing Started",
           description: `Your plan is being generated and will be sent to ${email} shortly.`,
@@ -112,6 +134,9 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         }, 1500);
       }
     } catch (error) {
+      console.log('💥 FETCH ERROR CAUGHT:', error);
+      console.log('🔍 Error details:', error.message, error.stack);
+      
       toast({
         title: "Processing Started",
         description: `Your plan is being generated and will be sent to ${email} shortly.`,
@@ -125,6 +150,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         });
       }, 1500);
     } finally {
+      console.log('🏁 Setting isProcessing to false');
       setIsProcessing(false);
     }
   };
