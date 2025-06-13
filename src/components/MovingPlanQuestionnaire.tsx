@@ -74,7 +74,8 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         }
       };
 
-      const response = await fetch('http://localhost:3001/api/generate-plan', {
+      // Use the correct API endpoint that matches the backend
+      const response = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
