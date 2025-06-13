@@ -71,7 +71,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
     setIsProcessing(true);
     
     try {
-      console.log('Making API call to generate plan...');
+      console.log('Making API call to backend server...');
       
       const requestBody = {
         city: city && state ? `${city}, ${state}` : 'Selected City',
@@ -93,15 +93,30 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
 
       console.log('Request body:', requestBody);
 
-      const response = await fetch('/api/generate-plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      // Try the backend server first (port 3001)
+      let response;
+      try {
+        response = await fetch('http://localhost:3001/api/generate-plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+        console.log('Backend server response status:', response.status);
+      } catch (backendError) {
+        console.log('Backend server not available, trying frontend API...');
+        // Fallback to frontend API route
+        response = await fetch('/api/generate-plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+        console.log('Frontend API response status:', response.status);
+      }
 
-      console.log('API response status:', response.status);
       const result = await response.json();
       console.log('API response:', result);
       
