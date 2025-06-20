@@ -510,7 +510,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGrouItem value="prefer-not-to-say" />
+                          <RadioGroupItem value="prefer-not-to-say" />
                         </FormControl>
                         <FormLabel className="font-normal">Prefer not to say</FormLabel>
                       </FormItem>
