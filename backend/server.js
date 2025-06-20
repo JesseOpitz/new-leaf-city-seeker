@@ -52,25 +52,6 @@ const allowedOrigins = [
 
 console.log('🔒 CORS allowed origins:', allowedOrigins);
 
-// Handle preflight requests first
-app.options('*', (req, res) => {
-  console.log('🔍 Preflight request from origin:', req.headers.origin);
-  const origin = req.headers.origin;
-  
-  if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400');
-    console.log('✅ Preflight approved for origin:', origin);
-    res.status(200).end();
-  } else {
-    console.log('❌ Preflight rejected for origin:', origin);
-    res.status(403).end();
-  }
-});
-
 const corsOptions = {
   origin: (origin, callback) => {
     console.log('🔍 CORS check for origin:', origin);
@@ -95,6 +76,8 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 };
 
+// Handle preflight requests first
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
 // Body parsing
