@@ -1,4 +1,3 @@
-
 const Joi = require('joi');
 
 const planRequestSchema = Joi.object({
@@ -12,7 +11,7 @@ const planRequestSchema = Joi.object({
       'string.min': 'City must be at least 2 characters',
       'string.max': 'City must not exceed 100 characters'
     }),
-  
+
   email: Joi.string()
     .email()
     .trim()
@@ -21,18 +20,18 @@ const planRequestSchema = Joi.object({
     .messages({
       'string.email': 'Please provide a valid email address'
     }),
-  
+
   questionnaire: Joi.object({
-    movingDate: Joi.string()
+    timeline: Joi.string()
       .trim()
       .min(1)
       .max(50)
       .required()
       .messages({
-        'string.empty': 'Moving date is required',
-        'string.max': 'Moving date is too long'
+        'string.empty': 'Timeline is required',
+        'string.max': 'Timeline is too long'
       }),
-    
+
     budget: Joi.string()
       .trim()
       .min(1)
@@ -42,20 +41,17 @@ const planRequestSchema = Joi.object({
         'string.empty': 'Budget is required',
         'string.max': 'Budget description is too long'
       }),
-    
-    householdSize: Joi.number()
-      .integer()
+
+    household: Joi.string()
+      .trim()
       .min(1)
-      .max(20)
+      .max(50)
       .required()
       .messages({
-        'number.base': 'Household size must be a number',
-        'number.integer': 'Household size must be a whole number',
-        'number.min': 'Household size must be at least 1',
-        'number.max': 'Household size cannot exceed 20',
-        'any.required': 'Household size is required'
+        'string.empty': 'Household size is required',
+        'string.max': 'Household size is too long'
       }),
-    
+
     income: Joi.string()
       .trim()
       .min(1)
@@ -65,8 +61,8 @@ const planRequestSchema = Joi.object({
         'string.empty': 'Income is required',
         'string.max': 'Income description is too long'
       }),
-    
-    reason: Joi.string()
+
+    moveReason: Joi.string()
       .trim()
       .min(1)
       .max(500)
@@ -74,18 +70,29 @@ const planRequestSchema = Joi.object({
       .messages({
         'string.empty': 'Reason for moving is required',
         'string.max': 'Reason is too long (max 500 characters)'
+      }),
+
+    hasChildren: Joi.boolean().optional(),
+    hasPets: Joi.boolean().optional(),
+
+    additionalInfo: Joi.string()
+      .allow('')
+      .max(1000)
+      .optional()
+      .messages({
+        'string.max': 'Additional information is too long (max 1000 characters)'
       })
   })
-  .required()
-  .messages({
-    'any.required': 'Questionnaire data is required'
-  })
+    .required()
+    .messages({
+      'any.required': 'Questionnaire data is required'
+    })
 });
 
 const validatePlanRequest = (data) => {
-  return planRequestSchema.validate(data, { 
+  return planRequestSchema.validate(data, {
     abortEarly: false,
-    stripUnknown: true 
+    stripUnknown: true
   });
 };
 
