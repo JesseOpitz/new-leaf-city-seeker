@@ -82,10 +82,14 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         }
       };
 
-      console.log('📤 Request body being sent:', JSON.stringify(requestBody, null, 2));
-      console.log('🌐 Making API call to /api/generate-plan');
+      // Use your Render backend URL - you'll need to replace this with your actual URL
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://new-leaf-backend.onrender.com';
+      const apiEndpoint = `${backendUrl}/api/generate-plan`;
 
-      const response = await fetch('/api/generate-plan', {
+      console.log('📤 Request body being sent:', JSON.stringify(requestBody, null, 2));
+      console.log('🌐 Making API call to:', apiEndpoint);
+
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
