@@ -26,18 +26,29 @@ router.post('/generate-plan', async (req, res) => {
     // Validate input
     const { error, value } = validatePlanRequest(req.body);
     if (error) {
-      console.log('❌ VALIDATION ERROR:', error.details[0].message);
+      console.log('❌ VALIDATION ERROR:', error.details.map(d => d.message));
       return res.status(400).json({ 
         error: 'Invalid input', 
-        details: error.details[0].message 
+        details: error.details.map(d => ({
+          field: d.path.join('.'),
+          message: d.message,
+          value: d.context?.value
+        }))
       });
     }
 
     const { city, email, questionnaire } = value;
     
+    // Convert string values to boolean for processing
+    const processedQuestionnaire = {
+      ...questionnaire,
+      hasChildren: questionnaire.hasChildren === 'yes',
+      hasPets: questionnaire.hasPets === 'yes'
+    };
+    
     console.log(`🏙️ Processing multi-PDF plan for: ${city}`);
     console.log(`📧 Email provided: ${email ? 'YES' : 'NO'} (${email || 'none'})`);
-    console.log(`📋 Questionnaire data:`, JSON.stringify(questionnaire, null, 2));
+    console.log(`📋 Processed questionnaire data:`, JSON.stringify(processedQuestionnaire, null, 2));
 
     // Extract city and state for PDF generation
     const cityParts = city.split(',');
@@ -50,7 +61,7 @@ router.post('/generate-plan', async (req, res) => {
     // Generate Welcome & Introduction PDF
     try {
       console.log('🤖 Generating Welcome & Introduction content...');
-      const welcomeHTML = await generateWelcomeAndIntroduction(city, questionnaire);
+      const welcomeHTML = await generateWelcomeAndIntroduction(city, processedQuestionnaire);
       const welcomeFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-welcome-guide.pdf`);
       const welcomePDFPath = await generatePDF(welcomeHTML, welcomeFilename, cityName, stateName, 'welcome');
       generatedPDFs.push({
@@ -67,7 +78,7 @@ router.post('/generate-plan', async (req, res) => {
     // Generate Checklist & Timeline PDF
     try {
       console.log('🤖 Generating Checklist & Timeline content...');
-      const checklistHTML = await generateChecklistAndTimeline(city, questionnaire);
+      const checklistHTML = await generateChecklistAndTimeline(city, processedQuestionnaire);
       const checklistFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-checklist-timeline.pdf`);
       const checklistPDFPath = await generatePDF(checklistHTML, checklistFilename, cityName, stateName, 'checklist');
       generatedPDFs.push({
@@ -84,7 +95,7 @@ router.post('/generate-plan', async (req, res) => {
     // Generate Costs & Resources PDF
     try {
       console.log('🤖 Generating Costs & Resources content...');
-      const costsHTML = await generateCostsAndResources(city, questionnaire);
+      const costsHTML = await generateCostsAndResources(city, processedQuestionnaire);
       const costsFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-costs-resources.pdf`);
       const costsPDFPath = await generatePDF(costsHTML, costsFilename, cityName, stateName, 'costs');
       generatedPDFs.push({
@@ -101,7 +112,7 @@ router.post('/generate-plan', async (req, res) => {
     // Generate Seasonal Guide PDF
     try {
       console.log('🤖 Generating Seasonal Guide content...');
-      const seasonalHTML = await generateSeasonalGuide(city, questionnaire);
+      const seasonalHTML = await generateSeasonalGuide(city, processedQuestionnaire);
       const seasonalFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-seasonal-guide.pdf`);
       const seasonalPDFPath = await generatePDF(seasonalHTML, seasonalFilename, cityName, stateName, 'seasonal');
       generatedPDFs.push({
@@ -116,17 +127,17 @@ router.post('/generate-plan', async (req, res) => {
     }
 
     // Generate Children & Pets Guide PDF (if applicable)
-    if (questionnaire.hasChildren || questionnaire.hasPets) {
+    if (processedQuestionnaire.hasChildren || processedQuestionnaire.hasPets) {
       try {
         console.log('🤖 Generating Children & Pets Guide content...');
-        const familyHTML = await generateChildrenAndPetsGuide(city, questionnaire);
+        const familyHTML = await generateChildrenAndPetsGuide(city, processedQuestionnaire);
         if (familyHTML) {
           const familyFilename = sanitizeFilename(`${cityName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-family-pets-guide.pdf`);
           const familyPDFPath = await generatePDF(familyHTML, familyFilename, cityName, stateName, 'family');
           generatedPDFs.push({
             path: familyPDFPath,
             filename: familyFilename,
-            title: `${questionnaire.hasChildren && questionnaire.hasPets ? 'Family & Pets' : questionnaire.hasChildren ? 'Children & Family' : 'Pet Owner'} Guide`
+            title: `${processedQuestionnaire.hasChildren && processedQuestionnaire.hasPets ? 'Family & Pets' : processedQuestionnaire.hasChildren ? 'Children & Family' : 'Pet Owner'} Guide`
           });
           console.log('✅ Children & pets guide generated successfully');
         }
