@@ -1,4 +1,5 @@
 
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -24,7 +25,10 @@ console.log('🚀 Email user present:', !!process.env.EMAIL_USER);
 console.log('🚀 Email pass present:', !!process.env.EMAIL_PASS);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false,
+}));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -38,19 +42,47 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// ✅ Updated CORS configuration to include your production domain
+// ✅ Comprehensive CORS configuration
 const allowedOrigins = [
   'https://new-leaf.net',
   'https://www.new-leaf.net',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:5173' // Add Vite dev server
 ];
+
+console.log('🔒 CORS allowed origins:', allowedOrigins);
+
+// Handle preflight requests first
+app.options('*', (req, res) => {
+  console.log('🔍 Preflight request from origin:', req.headers.origin);
+  const origin = req.headers.origin;
+  
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+    console.log('✅ Preflight approved for origin:', origin);
+    res.status(200).end();
+  } else {
+    console.log('❌ Preflight rejected for origin:', origin);
+    res.status(403).end();
+  }
+});
 
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log('🔍 CORS check for origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('✅ No origin - allowing request');
+      return callback(null, true);
+    }
     
     if (allowedOrigins.includes(origin)) {
+      console.log('✅ Origin allowed:', origin);
       callback(null, true);
     } else {
       console.warn(`⛔ CORS blocked for origin: ${origin}`);
@@ -62,6 +94,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 };
+
 app.use(cors(corsOptions));
 
 // Body parsing
@@ -71,6 +104,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logger
 app.use((req, res, next) => {
   console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.path} from ${req.ip}`);
+  console.log(`📥 Origin: ${req.headers.origin}`);
   console.log(`📥 Headers:`, req.headers);
   if (req.body && Object.keys(req.body).length > 0) {
     console.log(`📥 Body:`, JSON.stringify(req.body, null, 2));
@@ -166,3 +200,4 @@ process.on('SIGINT', () => {
   console.log('💤 Received SIGINT, shutting down gracefully');
   process.exit(0);
 });
+
