@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -37,15 +38,19 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// ✅ Updated CORS configuration
+// ✅ Updated CORS configuration to include your production domain
 const allowedOrigins = [
   'https://new-leaf.net',
+  'https://www.new-leaf.net',
   'http://localhost:3000'
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.warn(`⛔ CORS blocked for origin: ${origin}`);
@@ -53,7 +58,9 @@ const corsOptions = {
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 };
 app.use(cors(corsOptions));
 
