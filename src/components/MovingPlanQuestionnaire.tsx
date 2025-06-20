@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,8 +83,8 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
         }
       };
 
-      // Use your Render backend URL - you'll need to replace this with your actual URL
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://new-leaf-backend.onrender.com';
+      // Use your Render backend URL with the correct domain
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://new-leaf-net.onrender.com';
       const apiEndpoint = `${backendUrl}/api/generate-plan`;
 
       console.log('📤 Request body being sent:', JSON.stringify(requestBody, null, 2));
@@ -509,7 +510,7 @@ const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city,
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
+                          <RadioGrouItem value="prefer-not-to-say" />
                         </FormControl>
                         <FormLabel className="font-normal">Prefer not to say</FormLabel>
                       </FormItem>
