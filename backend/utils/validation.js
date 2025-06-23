@@ -1,4 +1,3 @@
-
 const Joi = require('joi');
 
 const planRequestSchema = Joi.object({
@@ -63,20 +62,18 @@ const planRequestSchema = Joi.object({
         'any.only': 'Move reason must be one of: job, family, lifestyle, retirement, education, other, prefer-not-to-say'
       }),
 
-    hasChildren: Joi.string()
-      .valid('yes', 'no', 'prefer-not-to-say')
+    hasChildren: Joi.boolean()
       .required()
       .messages({
-        'string.empty': 'Children status is required',
-        'any.only': 'Children status must be one of: yes, no, prefer-not-to-say'
+        'boolean.base': 'Children status must be true or false',
+        'any.required': 'Children status is required'
       }),
 
-    hasPets: Joi.string()
-      .valid('yes', 'no', 'prefer-not-to-say')
+    hasPets: Joi.boolean()
       .required()
       .messages({
-        'string.empty': 'Pets status is required',
-        'any.only': 'Pets status must be one of: yes, no, prefer-not-to-say'
+        'boolean.base': 'Pets status must be true or false',
+        'any.required': 'Pets status is required'
       }),
 
     additionalInfo: Joi.string()
@@ -98,7 +95,7 @@ const validatePlanRequest = (data) => {
     abortEarly: false,
     stripUnknown: true
   });
-  
+
   // Add detailed logging for validation debugging
   if (result.error) {
     console.log('❌ VALIDATION FAILED:');
@@ -112,7 +109,7 @@ const validatePlanRequest = (data) => {
     console.log('✅ VALIDATION PASSED');
     console.log('📝 Validated data:', JSON.stringify(result.value, null, 2));
   }
-  
+
   return result;
 };
 
