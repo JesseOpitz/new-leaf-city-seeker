@@ -1,620 +1,294 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from "@/hooks/use-toast";
 
 interface MovingPlanQuestionnaireProps {
-  onComplete: (data: any) => void;
-  onCancel: () => void;
-  embedded?: boolean;
-  city?: string;
-  state?: string;
+  city: string;
+  state: string;
+  onClose: () => void;
 }
 
-const MovingPlanQuestionnaire = ({ onComplete, onCancel, embedded = false, city, state }: MovingPlanQuestionnaireProps) => {
-  const { toast } = useToast();
+const MovingPlanQuestionnaire = ({ city, state, onClose }: MovingPlanQuestionnaireProps) => {
   const [email, setEmail] = useState('');
-  const [confirmEmail, setConfirmEmail] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const form = useForm({
-    defaultValues: {
-      timeline: "",
-      budget: "",
-      household: "",
-      income: "",
-      moveReason: "",
-      hasChildren: "",
-      hasPets: "",
-      additionalInfo: "",
-    }
+  const [responses, setResponses] = useState({
+    housingType: '',
+    budgetRange: '',
+    priority: '',
+    familyDetails: '',
+    jobMarket: '',
+    lifestyle: '',
+    additionalInfo: '',
+    hasChildren: '',
+    hasPets: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (data: any) => {
-    console.log('🚀 STARTING PLAN GENERATION PROCESS');
-    console.log('📝 Form data received:', data);
-    console.log('📧 Email:', email);
-    console.log('🏙️ City:', city);
-    console.log('🏛️ State:', state);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setResponses(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    // Validation checks
-    if (!email || email !== confirmEmail) {
-      console.log('❌ Email validation failed');
-      toast({
-        title: "Email Required",
-        description: "Please enter and confirm your email address.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleSelectChange = (name: string, value: string) => {
+    setResponses(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    if (!data.timeline || !data.budget || !data.household || !data.income || !data.moveReason || !data.hasChildren || !data.hasPets) {
-      console.log('❌ Form validation failed');
-      toast({
-        title: "Please Complete All Fields",
-        description: "All questions must be answered to generate your personalized plan.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleRadioChange = (name: string, value: string) => {
+    setResponses(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    console.log('✅ Validation passed, starting API call');
-    setIsProcessing(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (isSubmitting) {
+      return; // Prevent double submission
+    }
+    
+    setIsSubmitting(true);
+
+    // Show immediate feedback
+    toast({
+      title: "Processing Your Request",
+      description: `Your moving plan for ${city} will be sent to ${email}. Please allow up to 15 minutes for delivery.`,
+      duration: 5000,
+    });
+
+    // Close modal and redirect immediately
+    onClose();
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 500);
+
     try {
-      const requestBody = {
-        city: city && state ? `${city}, ${state}` : 'Selected City',
-        email: email,
-        questionnaire: {
-          timeline: data.timeline,
-          budget: data.budget,
-          household: data.household,
-          income: data.income,
-          moveReason: data.moveReason,
-          hasChildren: data.hasChildren === 'yes',
-          hasPets: data.hasPets === 'yes',
-          additionalInfo: data.additionalInfo
-        }
-      };
-
-      // Use your Render backend URL with the correct domain
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://new-leaf-net.onrender.com';
-      const apiEndpoint = `${backendUrl}/api/generate-plan`;
-
-      console.log('📤 Request body being sent:', JSON.stringify(requestBody, null, 2));
-      console.log('🌐 Making API call to:', apiEndpoint);
-
-      const response = await fetch(apiEndpoint, {
+      const response = await fetch('https://new-leaf-net.onrender.com/api/generate-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
-      });
-
-      console.log('📡 Response received:', response);
-      console.log('📊 Response status:', response.status);
-      console.log('📋 Response ok:', response.ok);
-
-      if (response.ok) {
-        console.log('✅ API call successful');
-        const responseData = await response.json();
-        console.log('📄 Response data:', responseData);
-        
-        toast({
-          title: "Success!",
-          description: `Your personalized moving plans have been sent to ${email}.`,
-        });
-        
-        setTimeout(() => {
-          onComplete({
-            ...data,
-            email,
-            success: true
-          });
-        }, 1500);
-        
-      } else {
-        console.log('⚠️ API call failed but proceeding with fallback');
-        const errorText = await response.text();
-        console.log('❌ Error response:', errorText);
-        
-        toast({
-          title: "Processing Started",
-          description: `Your plan is being generated and will be sent to ${email} shortly.`,
-        });
-        
-        setTimeout(() => {
-          onComplete({
-            ...data,
-            email,
-            success: true
-          });
-        }, 1500);
-      }
-    } catch (error) {
-      console.log('💥 FETCH ERROR CAUGHT:', error);
-      console.log('🔍 Error details:', error.message, error.stack);
-      
-      toast({
-        title: "Processing Started",
-        description: `Your plan is being generated and will be sent to ${email} shortly.`,
-      });
-      
-      setTimeout(() => {
-        onComplete({
-          ...data,
+        body: JSON.stringify({
+          city: `${city}, ${state}`,
           email,
-          success: true
-        });
-      }, 1500);
+          questionnaire: responses
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to generate plan');
+      }
+
+      console.log('Plan generation initiated successfully:', data);
+
+    } catch (error) {
+      console.error('Error generating plan:', error);
+      // Show error toast but don't change the user flow since they've already been redirected
+      toast({
+        title: "Request Processing",
+        description: "Your request has been received. If you don't receive your plan within 15 minutes, please contact support.",
+        variant: "destructive",
+        duration: 8000,
+      });
     } finally {
-      console.log('🏁 Setting isProcessing to false');
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
-  const ContentWrapper = embedded ? 'div' : ScrollArea;
-  const wrapperProps = embedded ? {} : { className: "h-[400px] pr-4 overflow-y-auto" };
-
   return (
-    <div className={embedded ? "" : "p-6"}>
-      {!embedded && (
-        <>
-          <h3 className="text-lg font-semibold mb-4">Personalize Your Moving Plan</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Complete the questionnaire and provide your email to receive your customized plan.
-          </p>
-        </>
-      )}
-
-      <ContentWrapper {...wrapperProps}>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Timeline Question */}
-            <FormField
-              control={form.control}
-              name="timeline"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>When are you planning to move? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="0-3" />
-                        </FormControl>
-                        <FormLabel className="font-normal">0-3 months</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="3-6" />
-                        </FormControl>
-                        <FormLabel className="font-normal">3-6 months</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="6-12" />
-                        </FormControl>
-                        <FormLabel className="font-normal">6-12 months</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="12+" />
-                        </FormControl>
-                        <FormLabel className="font-normal">More than a year</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="not-sure" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Not sure yet</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Budget Question */}
-            <FormField
-              control={form.control}
-              name="budget"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>What is your approximate moving budget? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="under-1000" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Under $1,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="1000-3000" />
-                        </FormControl>
-                        <FormLabel className="font-normal">$1,000 - $3,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="3000-5000" />
-                        </FormControl>
-                        <FormLabel className="font-normal">$3,000 - $5,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="5000-10000" />
-                        </FormControl>
-                        <FormLabel className="font-normal">$5,000 - $10,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="10000+" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Over $10,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Household Size Question */}
-            <FormField
-              control={form.control}
-              name="household"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>How many people will be moving with you? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="just-me" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Just me</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="2" />
-                        </FormControl>
-                        <FormLabel className="font-normal">2 people</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="3-4" />
-                        </FormControl>
-                        <FormLabel className="font-normal">3-4 people</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="5+" />
-                        </FormControl>
-                        <FormLabel className="font-normal">5+ people</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Income Range Question */}
-            <FormField
-              control={form.control}
-              name="income"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>What is your approximate household income? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="under-50k" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Under $50,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="50k-100k" />
-                        </FormControl>
-                        <FormLabel className="font-normal">$50,000 - $100,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="100k-150k" />
-                        </FormControl>
-                        <FormLabel className="font-normal">$100,000 - $150,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="150k+" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Over $150,000</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Move Reason Question */}
-            <FormField
-              control={form.control}
-              name="moveReason"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>What is the primary reason for your move? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="job" />
-                        </FormControl>
-                        <FormLabel className="font-normal">New job/Career opportunity</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="family" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Family reasons</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="lifestyle" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Lifestyle change</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="retirement" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Retirement</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="education" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Education</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="other" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Other</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Children Question */}
-            <FormField
-              control={form.control}
-              name="hasChildren"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Are you travelling with children? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="yes" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Yes</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="no" />
-                        </FormControl>
-                        <FormLabel className="font-normal">No</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Pets Question */}
-            <FormField
-              control={form.control}
-              name="hasPets"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Are you travelling with pets? *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="yes" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Yes</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="no" />
-                        </FormControl>
-                        <FormLabel className="font-normal">No</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="prefer-not-to-say" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Prefer not to say</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Additional Information Field */}
-            <FormField
-              control={form.control}
-              name="additionalInfo"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Additional Information (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Feel free to add any additional information about your preferences, situation, or specific needs for your move..."
-                      className="min-h-[120px] resize-none"
-                      maxLength={1000}
-                    />
-                  </FormControl>
-                  <p className="text-xs text-gray-500">
-                    {field.value?.length || 0}/1000 characters - This helps us create a more personalized moving plan for you
-                  </p>
-                </FormItem>
-              )}
-            />
-
-            {/* Email and Payment Section */}
-            <div className="border-t pt-6">
-              <h4 className="text-md font-semibold mb-3">Email & Payment</h4>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address *
-                  </label>
-                  <Input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Your moving plan will be sent to this email address
-                  </p>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                    Confirm Email Address *
-                  </label>
-                  <Input
-                    type="email"
-                    id="confirmEmail"
-                    value={confirmEmail}
-                    onChange={(e) => setConfirmEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    className="w-full"
-                  />
-                  {email && confirmEmail && email !== confirmEmail && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Email addresses do not match
-                    </p>
-                  )}
-                </div>
-                
-                <div className="text-center">
-                  <p className="text-lg font-bold text-leaf-dark mb-2">$4.99</p>
-                  <p className="text-sm text-gray-500">One-time payment</p>
-                </div>
-              </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-8">
+          <h2 className="text-2xl font-semibold text-leaf-dark mb-6 text-center">
+            Tell us about your moving preferences
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </Label>
+              <Input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="shadow-sm focus:ring-leaf focus:border-leaf block w-full sm:text-sm border-gray-300 rounded-md"
+                required
+              />
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onCancel}
-                disabled={isProcessing}
+            <div>
+              <Label htmlFor="housingType" className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Housing Type
+              </Label>
+              <Select onValueChange={(value) => handleSelectChange('housingType', value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select housing type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="apartment">Apartment</SelectItem>
+                  <SelectItem value="house">House</SelectItem>
+                  <SelectItem value="townhouse">Townhouse</SelectItem>
+                  <SelectItem value="condo">Condo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="budgetRange" className="block text-sm font-medium text-gray-700 mb-2">
+                Monthly Budget Range
+              </Label>
+              <Select onValueChange={(value) => handleSelectChange('budgetRange', value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select budget range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under-1500">Under $1,500</SelectItem>
+                  <SelectItem value="1500-2500">$1,500 - $2,500</SelectItem>
+                  <SelectItem value="2500-3500">$2,500 - $3,500</SelectItem>
+                  <SelectItem value="over-3500">Over $3,500</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
+                What is your top priority when choosing a neighborhood?
+              </Label>
+              <Select onValueChange={(value) => handleSelectChange('priority', value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="safety">Safety</SelectItem>
+                  <SelectItem value="schools">Good Schools</SelectItem>
+                  <SelectItem value="commute">Easy Commute</SelectItem>
+                  <SelectItem value="amenities">Amenities</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="familyDetails" className="block text-sm font-medium text-gray-700 mb-2">
+                Tell us about your family (size, ages, etc.)
+              </Label>
+              <Textarea
+                id="familyDetails"
+                name="familyDetails"
+                rows={3}
+                className="shadow-sm focus:ring-leaf focus:border-leaf block w-full sm:text-sm border-gray-300 rounded-md"
+                onChange={handleChange}
+                value={responses.familyDetails}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="jobMarket" className="block text-sm font-medium text-gray-700 mb-2">
+                What type of job market are you seeking?
+              </Label>
+              <Textarea
+                id="jobMarket"
+                name="jobMarket"
+                rows={3}
+                className="shadow-sm focus:ring-leaf focus:border-leaf block w-full sm:text-sm border-gray-300 rounded-md"
+                onChange={handleChange}
+                value={responses.jobMarket}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="lifestyle" className="block text-sm font-medium text-gray-700 mb-2">
+                Describe your ideal lifestyle
+              </Label>
+              <Textarea
+                id="lifestyle"
+                name="lifestyle"
+                rows={3}
+                className="shadow-sm focus:ring-leaf focus:border-leaf block w-full sm:text-sm border-gray-300 rounded-md"
+                onChange={handleChange}
+                value={responses.lifestyle}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="additionalInfo" className="block text-sm font-medium text-gray-700 mb-2">
+                Any additional information to help us customize your plan?
+              </Label>
+              <Textarea
+                id="additionalInfo"
+                name="additionalInfo"
+                rows={3}
+                className="shadow-sm focus:ring-leaf focus:border-leaf block w-full sm:text-sm border-gray-300 rounded-md"
+                onChange={handleChange}
+                value={responses.additionalInfo}
+              />
+            </div>
+
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                Do you have children?
+              </Label>
+              <RadioGroup onValueChange={(value) => handleRadioChange('hasChildren', value)} className="flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="children-yes" />
+                  <Label htmlFor="children-yes">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="children-no" />
+                  <Label htmlFor="children-no">No</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                Do you have pets?
+              </Label>
+              <RadioGroup onValueChange={(value) => handleRadioChange('hasPets', value)} className="flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="pets-yes" />
+                  <Label htmlFor="pets-yes">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="pets-no" />
+                  <Label htmlFor="pets-no">No</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                className="bg-leaf hover:bg-leaf-dark"
-                disabled={isProcessing || !email || !confirmEmail || email !== confirmEmail}
+              <Button
+                type="submit"
+                className="flex-1 bg-leaf hover:bg-leaf-dark text-white"
+                disabled={isSubmitting}
               >
-                {isProcessing ? 'Processing...' : 'Purchase Moving Plan'}
+                {isSubmitting ? 'Processing...' : 'Purchase Plan - $4.99'}
               </Button>
             </div>
-
-            <p className="text-xs text-gray-500 mt-4 text-center">
-              We don't store any personal data from the questionnaire. Your privacy is important to us.
-            </p>
           </form>
-        </Form>
-      </ContentWrapper>
+        </div>
+      </div>
     </div>
   );
 };

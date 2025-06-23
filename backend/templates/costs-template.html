@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{document_title}}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .pdf-page {
+      width: 210mm;
+      min-height: 297mm;
+      max-height: 297mm;
+      padding: 20mm;
+      margin: 0 auto;
+      background: white;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pdf-page:last-child {
+      page-break-after: avoid;
+    }
+
+    .header {
+      position: absolute;
+      top: 10mm;
+      left: 20mm;
+      right: 20mm;
+      height: 15mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #7fb069;
+      padding-bottom: 5mm;
+    }
+
+    .logo {
+      height: 12mm;
+    }
+
+    .document-title {
+      color: #2c5530;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 10mm;
+      left: 20mm;
+      right: 20mm;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #dee2e6;
+      padding-top: 5mm;
+    }
+
+    .footer-last-page {
+      position: absolute;
+      bottom: 10mm;
+      left: 20mm;
+      right: 20mm;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #dee2e6;
+      padding-top: 5mm;
+    }
+
+    .satisfaction-guarantee {
+      color: #22c55e;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .content {
+      margin-top: 30mm;
+      margin-bottom: 30mm;
+      height: calc(100% - 60mm);
+      overflow: hidden;
+    }
+
+    h1 {
+      color: #2c5530;
+      font-size: 20px;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #7fb069;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      color: #2c5530;
+      font-size: 16px;
+      margin-top: 25px;
+      margin-bottom: 15px;
+    }
+
+    h3 {
+      color: #4a7c59;
+      font-size: 14px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #2c5530;
+    }
+
+    .cost-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-left: 4px solid #7fb069;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .highlight-box {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 1px solid #7fb069;
+    }
+
+    @media print {
+      .pdf-page {
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cost Overview Page -->
+  <div class="pdf-page">
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/logo.png" alt="New Leaf Logo" class="logo" />
+      <div class="document-title">{{document_title}}</div>
+    </div>
+
+    <div class="content">
+      <h1>Cost Breakdown & Budget Planning</h1>
+      
+      <p>{{city_overview}}</p>
+
+      <div class="cost-section">
+        <h2>Housing Costs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Housing Type</th>
+              <th>Average Cost</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1 Bedroom Rental</td>
+              <td>{{housing_costs.rent_1br}}</td>
+              <td>Per month</td>
+            </tr>
+            <tr>
+              <td>2 Bedroom Rental</td>
+              <td>{{housing_costs.rent_2br}}</td>
+              <td>Per month</td>
+            </tr>
+            <tr>
+              <td>3 Bedroom Rental</td>
+              <td>{{housing_costs.rent_3br}}</td>
+              <td>Per month</td>
+            </tr>
+            <tr>
+              <td>Median Home Price</td>
+              <td>{{housing_costs.median_home_price}}</td>
+              <td>For purchase</td>
+            </tr>
+            <tr>
+              <td>Property Tax Rate</td>
+              <td>{{housing_costs.property_tax_rate}}</td>
+              <td>Annual rate</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cost-section">
+        <h2>Monthly Living Expenses</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Monthly Cost</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each living_expenses}}
+            <tr>
+              <td>{{category}}</td>
+              <td>{{monthly_cost}}</td>
+              <td>{{notes}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Generated by New Leaf • Visit us at new-leaf.net</div>
+    </div>
+  </div>
+
+  <!-- Income & Tax Information Page -->
+  <div class="pdf-page">
+    <div class="header">
+      <img src="https://raw.githubusercontent.com/JesseOpitz/new-leaf-city-seeker/main/logo.png" alt="New Leaf Logo" class="logo" />
+      <div class="document-title">{{document_title}}</div>
+    </div>
+
+    <div class="content">
+      <h1>Income & Tax Information</h1>
+
+      <div class="highlight-box">
+        <h2>Salary Expectations</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Income Level</th>
+              <th>Range</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Median Household Income</td>
+              <td>{{salary_expectations.median_household_income}}</td>
+              <td>Annual household average</td>
+            </tr>
+            <tr>
+              <td>Entry Level Range</td>
+              <td>{{salary_expectations.entry_level_range}}</td>
+              <td>For new professionals</td>
+            </tr>
+            <tr>
+              <td>Experienced Range</td>
+              <td>{{salary_expectations.experienced_range}}</td>
+              <td>For seasoned professionals</td>
+            </tr>
+            <tr>
+              <td>Cost of Living Index</td>
+              <td>{{salary_expectations.cost_of_living_index}}</td>
+              <td>Compared to US average</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cost-section">
+        <h2>Tax Information</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Tax Type</th>
+              <th>Rate</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>State Income Tax</td>
+              <td>{{tax_information.state_income_tax}}</td>
+              <td>Annual rate on income</td>
+            </tr>
+            <tr>
+              <td>Sales Tax</td>
+              <td>{{tax_information.sales_tax_rate}}</td>
+              <td>On purchases</td>
+            </tr>
+            <tr>
+              <td>Property Tax</td>
+              <td>See housing section</td>
+              <td>{{tax_information.property_tax_info}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cost-section">
+        <h2>Local Resources & Contacts</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Organization</th>
+              <th>Contact Information</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each local_resources}}
+            <tr>
+              <td>{{category}}</td>
+              <td>{{name}}</td>
+              <td>{{address}}<br>{{phone}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer-last-page">
+      <div class="satisfaction-guarantee">
+        Not seeing what you expected? Please reach out to support@new-leaf.net at any time for a full refund.
+      </div>
+      <div>Generated by New Leaf • Visit us at new-leaf.net</div>
+    </div>
+  </div>
+
+</body>
+</html>
