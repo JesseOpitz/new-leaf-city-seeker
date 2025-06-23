@@ -6,71 +6,65 @@ const openai = new OpenAI({
 
 const generateWelcomeAndIntroduction = async (city, questionnaire) => {
   const prompt = `
-Create a professional, highly personalized relocation introduction for someone moving to ${city}, based on the following details:
+Create structured content for a personalized relocation welcome guide for someone moving to ${city}.
 
-- Moving Date: ${questionnaire.movingDate}
+Personal Details:
+- Timeline: ${questionnaire.timeline}
 - Budget: ${questionnaire.budget}
-- Household Size: ${questionnaire.householdSize} people
+- Household Size: ${questionnaire.household} people
 - Income: ${questionnaire.income}
-- Reason for Moving: ${questionnaire.reason}
-${questionnaire.additionalInfo ? `- Additional Personalization: ${questionnaire.additionalInfo}
+- Reason for Moving: ${questionnaire.moveReason}
+${questionnaire.hasChildren ? '- Has Children: Yes' : ''}
+${questionnaire.hasPets ? '- Has Pets: Yes' : ''}
+${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.additionalInfo}` : ''}
 
-IMPORTANT: The user has provided additional personalization information. This must be referenced and used throughout all sections with genuine empathy and understanding.` : ''}
+Return ONLY a JSON object with this exact structure (no code blocks, no markdown):
 
-Generate professional HTML content with appropriate <html>, <head>, and <body> tags. The plan must include:
+{
+  "document_title": "Welcome to [City], [State]",
+  "title_heading": "Thank you for purchasing your personalized moving plan for [City], [State]",
+  "content_list": [
+    "Personalized Welcome & Overview",
+    "Cultural Expectations & City Atmosphere", 
+    "What to Expect Upon Arrival",
+    "Transition & Mental Preparation Tips",
+    "How This City Aligns with Your Goals",
+    "Support Groups & Social Opportunities",
+    "Local Orientation Strategies"
+  ],
+  "sections": [
+    {
+      "title": "Personalized Welcome & Overview",
+      "content": "Write exactly 500-600 words of personalized welcome content addressing their specific situation, timeline, and reasons for moving. Be warm and encouraging."
+    },
+    {
+      "title": "Cultural Expectations & City Atmosphere",
+      "content": "Write exactly 500-600 words about the city's culture, lifestyle, social dynamics, and what makes it unique."
+    },
+    {
+      "title": "What to Expect Upon Arrival", 
+      "content": "Write exactly 500-600 words about first impressions, infrastructure, transportation, and initial adjustment considerations."
+    },
+    {
+      "title": "Transition & Mental Preparation Tips",
+      "content": "Write exactly 500-600 words about psychological preparation, stress management, and maintaining connections."
+    },
+    {
+      "title": "How This City Aligns with Your Goals",
+      "content": "Write exactly 500-600 words analyzing how this city fits their reason for moving and long-term benefits."
+    },
+    {
+      "title": "Support Groups & Social Opportunities", 
+      "content": "Write exactly 500-600 words about networking, social clubs, and community connections."
+    },
+    {
+      "title": "Local Orientation Strategies",
+      "content": "Write exactly 500-600 words about neighborhood exploration and building local knowledge quickly."
+    }
+  ]
+}
 
-1. **Warm Welcome Message and Introductory Note** (EXACTLY 400 words)
-   - Personal greeting acknowledging their specific situation
-   - ${questionnaire.additionalInfo ? 'Address their personal circumstances with empathy and understanding' : ''}
-   - Expression of excitement for their journey to ${city}
-   - Do not mention spscific dates since theynare only entering an approximate timeline.
-
-2. **Cultural Expectations, City Atmosphere, and General Vibe** (EXACTLY 400 words)
-   - Detailed overview of ${city}'s culture and lifestyle
-   - What makes this city unique
-   - Social dynamics and community feel
-   - Local customs and traditions
-
-3. **What to Expect Upon Arrival** (EXACTLY 400 words)
-   - First impressions and immediate experiences
-   - Infrastructure and city layout
-   - Transportation and accessibility
-   - Initial adjustment considerations
-
-4. **Transition and Mental Preparation Tips** (EXACTLY 400 words)
-   - Psychological preparation for the move
-   - Stress management strategies
-   - Building resilience during transition
-   - Maintaining connections to home
-
-5. **How This City Aligns with Their Reason for Moving** (EXACTLY 400 words)
-   - Specific analysis based on their reason: ${questionnaire.reason}
-   - Opportunities this city provides for their goals
-   - Success stories and testimonials
-   - Long-term benefits and potential
-
-6. **Support Groups and Social Meetup Ideas** (EXACTLY 400 words)
-   - Professional networking opportunities
-   - Social clubs and hobby groups
-   - Family-friendly communities (if applicable)
-   - Online and offline networking platforms
-
-7. **Local Orientation Strategies** (EXACTLY 400 words)
-   - Neighborhood exploration guide
-   - First-week survival tips
-   - Essential locations to discover early
-   - Building local knowledge quickly
-
-FORMATTING REQUIREMENTS:
-- Include complete HTML structure with <html>, <head>, and <body> tags
-- Each section must be EXACTLY 400 words - no more, no less
-- Never include markdown code blocks like \`\`\`html
-- Write in a warm, helpful tone while maintaining professional formatting
-- Format all headers cleanly with proper HTML tags
-- Use semantic, clean HTML and responsive layout hints
-- Content must look polished and print-ready
-
-DO NOT wrap the output in code blocks. Return pure HTML only.
+CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 `;
 
   try {
@@ -79,7 +73,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: "You are a professional relocation specialist who creates detailed, personalized moving guides. Always respond with well-formatted HTML that's ready for PDF conversion. Show genuine empathy for the user's situation and use any provided additional information extensively throughout the content. Each section must be EXACTLY 400 words."
+          content: "You are a professional relocation specialist. Return only valid JSON objects with structured content. Each content section must be exactly 500-600 words. No code blocks or markdown formatting."
         },
         {
           role: "user",
@@ -90,14 +84,24 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       temperature: 0.7,
     });
 
-    let htmlContent = completion.choices[0]?.message?.content || '';
-    htmlContent = htmlContent.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
+    let response = completion.choices[0]?.message?.content || '';
     
-    if (!htmlContent || htmlContent.trim().length < 100) {
-      throw new Error('OpenAI returned insufficient content for welcome guide');
+    // Clean up any potential markdown formatting
+    response = response.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    
+    try {
+      const data = JSON.parse(response);
+      
+      // Validate the response structure
+      if (!data.sections || !Array.isArray(data.sections) || data.sections.length < 7) {
+        throw new Error('Invalid welcome guide structure');
+      }
+      
+      return data;
+    } catch (parseError) {
+      console.error('❌ Failed to parse OpenAI JSON response:', parseError);
+      throw new Error('Invalid JSON response from OpenAI');
     }
-
-    return htmlContent;
   } catch (error) {
     console.error('❌ Error generating welcome guide:', error);
     throw new Error(`Welcome guide generation failed: ${error.message}`);
@@ -106,73 +110,102 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
 
 const generateChecklistAndTimeline = async (city, questionnaire) => {
   const prompt = `
-Build an interactive-style checklist page followed by a 30-60-90 day preparation timeline for someone moving to ${city}.
+Create structured checklist and timeline content for someone moving to ${city}.
 
-Moving Details:
-- Moving Date: ${questionnaire.movingDate}
+Personal Details:
+- Timeline: ${questionnaire.timeline}
 - Budget: ${questionnaire.budget}
-- Household Size: ${questionnaire.householdSize} people
+- Household Size: ${questionnaire.household} people
 - Income: ${questionnaire.income}
-- Reason for Moving: ${questionnaire.reason}
-${questionnaire.hasChildren ? '- Traveling with Children: Yes' : ''}
-${questionnaire.hasPets ? '- Traveling with Pets: Yes' : ''}
+- Reason for Moving: ${questionnaire.moveReason}
+${questionnaire.hasChildren ? '- Has Children: Yes' : ''}
+${questionnaire.hasPets ? '- Has Pets: Yes' : ''}
 ${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.additionalInfo}` : ''}
 
-Generate professional HTML content with complete structure. Include:
+Return ONLY a JSON object with this exact structure:
 
-1. **Comprehensive Moving Checklist** (Full page table with 20-30 items)
-   - Format with checkboxes (☐) and helpful context
-   - Use professional table layout with borders and headings
-   - Include sections for:
-     * Financial Preparation
-     * Documentation and Legal Tasks
-     * Packing and Logistics
-     * ${questionnaire.hasChildren ? 'Child-Specific Tasks (school enrollment, medical records, etc.)' : ''}
-     * ${questionnaire.hasPets ? 'Pet-Specific Tasks (vet records, travel carriers, registration)' : ''}
-     * Utilities and Services
-     * Personal and Family Readiness
-   - Each item should be actionable and specific
+{
+  "document_title": "Moving Checklist & Timeline for [City]",
+  "checklist_items": [
+    {
+      "task": "Specific actionable task description",
+      "category": "Financial|Documentation|Packing|Children|Pets|Utilities|Personal",
+      "priority": "High|Medium|Low"
+    }
+    // Include exactly 25-30 items covering all categories
+  ],
+  "timeline_phases": [
+    {
+      "phase_title": "30 Days Before Move",
+      "description": "150-200 word overview of this phase",
+      "tasks": [
+        "Specific actionable task 1",
+        "Specific actionable task 2", 
+        "Specific actionable task 3",
+        "Specific actionable task 4",
+        "Specific actionable task 5",
+        "Specific actionable task 6",
+        "Specific actionable task 7"
+      ]
+    },
+    {
+      "phase_title": "1 Week Before Move", 
+      "description": "150-200 word overview of this phase",
+      "tasks": [
+        "Specific actionable task 1",
+        "Specific actionable task 2",
+        "Specific actionable task 3", 
+        "Specific actionable task 4",
+        "Specific actionable task 5",
+        "Specific actionable task 6",
+        "Specific actionable task 7"
+      ]
+    },
+    {
+      "phase_title": "Move Day Strategy",
+      "description": "150-200 word overview of move day",
+      "tasks": [
+        "Specific actionable task 1",
+        "Specific actionable task 2",
+        "Specific actionable task 3",
+        "Specific actionable task 4", 
+        "Specific actionable task 5",
+        "Specific actionable task 6",
+        "Specific actionable task 7"
+      ]
+    },
+    {
+      "phase_title": "First Week After Move",
+      "description": "150-200 word overview of first week",
+      "tasks": [
+        "Specific actionable task 1",
+        "Specific actionable task 2",
+        "Specific actionable task 3",
+        "Specific actionable task 4",
+        "Specific actionable task 5", 
+        "Specific actionable task 6",
+        "Specific actionable task 7"
+      ]
+    },
+    {
+      "phase_title": "First 90 Days Integration Plan",
+      "description": "150-200 word overview of long-term integration",
+      "tasks": [
+        "Specific actionable task 1", 
+        "Specific actionable task 2",
+        "Specific actionable task 3",
+        "Specific actionable task 4",
+        "Specific actionable task 5",
+        "Specific actionable task 6",
+        "Specific actionable task 7"
+      ]
+    }
+  ]
+}
 
-2. **30 Days Before Move** (EXACTLY 400 words)
-   - Detailed preparation tasks
-   - Planning and organization priorities
-   - Research and decision-making phase
-   - Early action items
+Make tasks specific and actionable, not generic. Include ${questionnaire.hasChildren ? 'children-specific tasks' : ''} ${questionnaire.hasPets ? 'and pet-specific tasks' : ''} where relevant.
 
-3. **1 Week Before Move** (EXACTLY 400 words)
-   - Final preparations and confirmations
-   - Last-minute tasks and reminders
-   - Emergency planning and backup strategies
-   - Final communication checklist
-
-4. **Move Day Strategy** (EXACTLY 400 words)
-   - Hour-by-hour moving day timeline
-   - Coordination and communication plan
-   - Problem-solving and contingency planning
-   - Essential items and emergency kit
-
-5. **First Week After Move** (EXACTLY 400 words)
-   - Immediate settlement priorities
-   - Essential services setup
-   - Neighborhood exploration
-   - Routine establishment
-
-6. **First 90 Days Integration Plan** (EXACTLY 400 words)
-   - Long-term settlement strategy
-   - Community integration steps
-   - Professional and social networking
-   - Lifestyle establishment and optimization
-
-FORMATTING REQUIREMENTS:
-- Include complete HTML structure with <html>, <head>, and <body> tags
-- Each section must be EXACTLY 400 words - no more, no less
-- Format checklist items with proper styling and borders
-- Never include markdown code blocks
-- Use clean tables and organized layouts
-- Write in a helpful, actionable tone
-- Make content print-ready and professional
-
-DO NOT wrap the output in code blocks. Return pure HTML only.
+CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 `;
 
   try {
@@ -181,7 +214,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       messages: [
         {
           role: "system",
-          content: "You are a professional moving coordinator who creates detailed checklists and timelines. Always respond with well-formatted HTML that's ready for PDF conversion. Focus on actionable, practical advice. Each section must be EXACTLY 400 words."
+          content: "You are a professional moving coordinator. Return only valid JSON with actionable, specific tasks. Each timeline phase must have exactly 7 tasks. No generic advice."
         },
         {
           role: "user",
@@ -192,17 +225,106 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
       temperature: 0.7,
     });
 
-    let htmlContent = completion.choices[0]?.message?.content || '';
-    htmlContent = htmlContent.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
+    let response = completion.choices[0]?.message?.content || '';
+    response = response.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
     
-    if (!htmlContent || htmlContent.trim().length < 100) {
-      throw new Error('OpenAI returned insufficient content for checklist');
+    try {
+      const data = JSON.parse(response);
+      
+      if (!data.checklist_items || !Array.isArray(data.checklist_items) || data.checklist_items.length < 20) {
+        throw new Error('Invalid checklist structure');
+      }
+      
+      if (!data.timeline_phases || !Array.isArray(data.timeline_phases) || data.timeline_phases.length < 5) {
+        throw new Error('Invalid timeline structure');
+      }
+      
+      return data;
+    } catch (parseError) {
+      console.error('❌ Failed to parse checklist JSON response:', parseError);
+      throw new Error('Invalid JSON response from OpenAI');
     }
-
-    return htmlContent;
   } catch (error) {
     console.error('❌ Error generating checklist:', error);
     throw new Error(`Checklist generation failed: ${error.message}`);
+  }
+};
+
+const generateSeasonalGuide = async (city, questionnaire) => {
+  const prompt = `
+Create structured seasonal guide content for ${city}.
+
+Return ONLY a JSON object with this exact structure:
+
+{
+  "document_title": "Seasonal Living Guide for [City]",
+  "climate_overview": "Write exactly 300-400 words about the overall climate and seasonal patterns in ${city}",
+  "seasonal_tips": "Write exactly 300-400 words about seasonal preparation and adaptation tips",
+  "weather_data": [
+    {
+      "month": "January",
+      "high_temp": "XX°F",
+      "low_temp": "XX°F", 
+      "precipitation": "X.X inches",
+      "description": "Brief description of January weather and activities"
+    }
+    // Include all 12 months with realistic temperature and precipitation data
+  ],
+  "produce_data": [
+    {
+      "month": "January",
+      "produce_list": "List at least 5-8 fruits/vegetables in season, comma separated",
+      "specialties": "Local specialties and market information for January"
+    }
+    // Include all 12 months with realistic seasonal produce
+  ],
+  "farmers_market_info": "Write 200-300 words about farmers markets, schedules, and local food culture in ${city}"
+}
+
+Research accurate weather data and seasonal produce for ${city}. Each month must have realistic temperatures and at least 5 seasonal items.
+
+CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
+`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-1106-preview", 
+      messages: [
+        {
+          role: "system",
+          content: "You are a climate and seasonal specialist. Return only valid JSON with accurate weather data and complete seasonal information for all 12 months. Research real data."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 4000,
+      temperature: 0.7,
+    });
+
+    let response = completion.choices[0]?.message?.content || '';
+    response = response.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    
+    try {
+      const data = JSON.parse(response);
+      
+      if (!data.weather_data || !Array.isArray(data.weather_data) || data.weather_data.length !== 12) {
+        throw new Error('Invalid weather data structure - must have 12 months');
+      }
+      
+      if (!data.produce_data || !Array.isArray(data.produce_data) || data.produce_data.length !== 12) {
+        throw new Error('Invalid produce data structure - must have 12 months');
+      }
+      
+      return data;
+    } catch (parseError) {
+      console.error('❌ Failed to parse seasonal JSON response:', parseError);
+      throw new Error('Invalid JSON response from OpenAI');
+    }
+  } catch (error) {
+    console.error('❌ Error generating seasonal guide:', error);
+    throw new Error(`Seasonal guide generation failed: ${error.message}`);
   }
 };
 
@@ -302,105 +424,6 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
   } catch (error) {
     console.error('❌ Error generating costs guide:', error);
     throw new Error(`Costs guide generation failed: ${error.message}`);
-  }
-};
-
-const generateSeasonalGuide = async (city, questionnaire) => {
-  const prompt = `
-Generate a professional seasonal guide for ${city} including climate, weather patterns, and local produce information.
-
-Personal Context:
-- Moving Date: ${questionnaire.movingDate}
-- Household Size: ${questionnaire.householdSize} people
-- Reason for Moving: ${questionnaire.reason}
-${questionnaire.hasChildren ? '- Has Children: Yes' : ''}
-${questionnaire.hasPets ? '- Has Pets: Yes' : ''}
-${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.additionalInfo}` : ''}
-
-Generate professional HTML content including:
-
-1. **Climate and Seasonal Experiences in ${city}** (EXACTLY 400 words)
-   - Comprehensive overview of the climate
-   - What to expect each season
-   - Seasonal lifestyle changes and adaptations
-   - How weather affects daily life and activities
-   - ${questionnaire.hasChildren ? 'Seasonal considerations for families with children' : ''}
-   - ${questionnaire.hasPets ? 'Weather impact on pets and seasonal pet care' : ''}
-
-2. **Monthly Temperature Chart** (Full page table)
-   - Professional table with monthly highs and lows
-   - Clean layout with background-shaded rows
-   - Include humidity and precipitation data
-   - Seasonal activity recommendations
-
-3. **Packing and Seasonal Adjustment Guide** (EXACTLY 400 words)
-   - What clothing and items to bring for each season
-   - Seasonal preparation tips
-   - Home preparation for different weather patterns
-   - Energy costs and utility considerations
-   - Storage and organization strategies
-
-4. **Local Produce and Food Seasonality** (Full page table with EXACTLY 400 words description)
-   - Seasonal fruits and vegetables table by month
-   - Farmer's market recommendations and schedules
-   - Local food specialties and seasonal dishes
-   - Tips for healthy and affordable seasonal eating
-   - Food preservation and storage advice
-
-5. **Seasonal Events and Activities** (EXACTLY 400 words)
-   - Annual festivals and community events
-   - Seasonal recreational opportunities
-   - Cultural activities throughout the year
-   - ${questionnaire.hasChildren ? 'Family-friendly seasonal activities and events' : ''}
-   - Networking and social opportunities by season
-
-6. **Seasonal Living Tips and Pros/Cons** (EXACTLY 400 words)
-   - Advantages and challenges of each season
-   - Cost considerations throughout the year
-   - Health and wellness seasonal tips
-   - Transportation and commuting seasonal changes
-
-FORMATTING REQUIREMENTS:
-- Include complete HTML structure with <html>, <head>, and <body> tags
-- Beautiful, inspiring, and clean styling
-- Professional table formatting for temperature and produce data
-- Each text section must be EXACTLY 400 words - no more, no less
-- Never include markdown code blocks
-- Use attractive color schemes and typography
-- Make tables readable with proper borders and spacing
-- Ensure content is comprehensive and visually appealing
-
-DO NOT wrap the output in code blocks. Return pure HTML only.
-`;
-
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
-      messages: [
-        {
-          role: "system",
-          content: "You are a climate and seasonal living specialist who creates beautiful, comprehensive seasonal guides. Always respond with well-formatted HTML that's ready for PDF conversion with attractive styling. Each text section must be EXACTLY 400 words."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 4000,
-      temperature: 0.7,
-    });
-
-    let htmlContent = completion.choices[0]?.message?.content || '';
-    htmlContent = htmlContent.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
-    
-    if (!htmlContent || htmlContent.trim().length < 100) {
-      throw new Error('OpenAI returned insufficient content for seasonal guide');
-    }
-
-    return htmlContent;
-  } catch (error) {
-    console.error('❌ Error generating seasonal guide:', error);
-    throw new Error(`Seasonal guide generation failed: ${error.message}`);
   }
 };
 
