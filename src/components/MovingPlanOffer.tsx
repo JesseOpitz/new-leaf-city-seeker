@@ -103,7 +103,6 @@ const MovingPlanOffer = ({ city, state, onClose }: MovingPlanOfferProps) => {
               <MovingPlanQuestionnaire 
                 onComplete={handleQuestionnaireComplete}
                 onCancel={onClose}
-                onClose={onClose}
                 embedded={true}
                 city={city}
                 state={state}

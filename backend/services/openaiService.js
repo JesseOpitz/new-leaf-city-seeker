@@ -258,7 +258,8 @@ Return ONLY a JSON object with this exact structure:
 
 {
   "document_title": "Seasonal Living Guide for [City]",
-  "city_overview": "Brief 2-3 sentence overview of cost of living in ${city}",
+  "climate_overview": "Write exactly 300-400 words about the overall climate and seasonal patterns in ${city}",
+  "seasonal_tips": "Write exactly 300-400 words about seasonal preparation and adaptation tips",
   "weather_data": [
     {
       "month": "January",
@@ -277,12 +278,7 @@ Return ONLY a JSON object with this exact structure:
     }
     // Include all 12 months with realistic seasonal produce
   ],
-  "seasonal_activities": [
-    {"season": "Spring", "activities": ["outdoor festivals", "hiking", "gardening", "farmers markets"], "description": "Spring in ${city} offers mild weather perfect for outdoor activities"},
-    {"season": "Summer", "activities": ["outdoor concerts", "swimming", "festivals", "camping"], "description": "Summer brings warm weather and numerous outdoor entertainment options"},
-    {"season": "Fall", "activities": ["apple picking", "hiking", "harvest festivals", "scenic drives"], "description": "Fall offers beautiful foliage and harvest celebrations"},
-    {"season": "Winter", "activities": ["indoor events", "holiday markets", "cozy venues", "winter sports"], "description": "Winter activities focus on indoor entertainment and seasonal celebrations"}
-  ]
+  "farmers_market_info": "Write 200-300 words about farmers markets, schedules, and local food culture in ${city}"
 }
 
 Research accurate weather data and seasonal produce for ${city}. Each month must have realistic temperatures and at least 5 seasonal items.
@@ -333,98 +329,101 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 };
 
 const generateCostsAndResources = async (city, questionnaire) => {
+  const prompt = `
+Create a comprehensive cost breakdown and local resources directory for someone moving to ${city}.
+
+Personal Details:
+- Budget: ${questionnaire.budget}
+- Household Size: ${questionnaire.householdSize} people
+- Income: ${questionnaire.income}
+- Reason for Moving: ${questionnaire.reason}
+${questionnaire.hasChildren ? '- Has Children: Yes' : ''}
+${questionnaire.hasPets ? '- Has Pets: Yes' : ''}
+${questionnaire.additionalInfo ? `- Additional Context: ${questionnaire.additionalInfo}` : ''}
+
+Generate professional HTML content including:
+
+1. **Detailed Cost Breakdown for ${city}** (Full page table)
+   - Comprehensive table with housing, utilities, transportation, healthcare, groceries, entertainment
+   - Include low/medium/high ranges for each category
+   - Monthly and yearly expense estimates
+   - Emergency fund suggestions
+   - Budget alignment commentary personalized to their income (${questionnaire.income}) and household size (${questionnaire.householdSize})
+   - ${questionnaire.hasChildren ? 'Include childcare and education costs' : ''}
+   - ${questionnaire.hasPets ? 'Include pet care and veterinary expenses' : ''}
+
+2. **Personalized Budget Analysis** (EXACTLY 400 words)
+   - How their budget fits with ${city} costs
+   - Optimization strategies for their situation
+   - Saving opportunities and cost-cutting tips
+   - Financial planning recommendations
+
+3. **Essential Local Resources Directory for ${city}** (Full page table)
+   - Format as clean tables with proper styling
+   - Include real contact information and websites where possible
+   - Minimum 15 entries covering:
+     * DMV and Government Services
+     * Healthcare Providers and Hospitals
+     * Schools and Educational Institutions
+     * Utilities and Internet Providers
+     * Banking and Financial Services
+     * ${questionnaire.hasChildren ? 'Childcare and Family Services' : ''}
+     * ${questionnaire.hasPets ? 'Veterinary and Pet Services' : ''}
+
+4. **Community and Support Resources** (EXACTLY 400 words)
+   - LGBTQ+ and minority support groups
+   - Women and family resources
+   - Professional networking organizations
+   - Cultural and recreational facilities
+   - Emergency contacts and crisis resources
+
+5. **Neighborhood Recommendations** (EXACTLY 400 words)
+   - Best areas based on their budget and needs
+   - Transportation accessibility
+   - Safety and security considerations
+   - Amenities and lifestyle fit
+
+FORMATTING REQUIREMENTS:
+- Include complete HTML structure with <html>, <head>, and <body> tags
+- Use professional table formatting with borders and styling
+- Each text section must be EXACTLY 400 words - no more, no less
+- Never include markdown code blocks
+- Ensure tables are readable and well-organized
+- Include actual URLs and contact information where possible
+- Make content comprehensive and actionable
+- Professional, polished appearance
+
+DO NOT wrap the output in code blocks. Return pure HTML only.
+`;
+
   try {
-    console.log('🤖 Generating costs and resources for:', city);
-    console.log('🤖 Questionnaire data:', JSON.stringify(questionnaire, null, 2));
-
-    const prompt = `Generate a comprehensive cost breakdown and local resources guide for moving to ${city}. 
-
-Return ONLY a JSON object with this exact structure (no markdown, no code blocks):
-
-{
-  "document_title": "Cost Breakdown & Local Resources for ${city}",
-  "city_overview": "Brief 2-3 sentence overview of cost of living in ${city}",
-  "housing_costs": {
-    "rent_1br": "$X,XXX",
-    "rent_2br": "$X,XXX", 
-    "rent_3br": "$X,XXX",
-    "median_home_price": "$XXX,XXX",
-    "property_tax_rate": "X.X%"
-  },
-  "living_expenses": [
-    {"category": "Groceries", "monthly_cost": "$XXX", "notes": "Based on family of 4"},
-    {"category": "Utilities", "monthly_cost": "$XXX", "notes": "Electric, gas, water, internet"},
-    {"category": "Transportation", "monthly_cost": "$XXX", "notes": "Gas, insurance, maintenance"},
-    {"category": "Healthcare", "monthly_cost": "$XXX", "notes": "Insurance premiums and copays"},
-    {"category": "Dining Out", "monthly_cost": "$XXX", "notes": "Restaurants and takeout"},
-    {"category": "Entertainment", "monthly_cost": "$XXX", "notes": "Movies, activities, subscriptions"}
-  ],
-  "salary_expectations": {
-    "median_household_income": "$XX,XXX",
-    "entry_level_range": "$XX,XXX - $XX,XXX",
-    "experienced_range": "$XX,XXX - $XX,XXX",
-    "cost_of_living_index": "XXX (US average = 100)"
-  },
-  "local_resources": [
-    {"category": "Banking", "name": "Local Bank Name", "address": "123 Main St", "phone": "(555) 123-4567"},
-    {"category": "Healthcare", "name": "Hospital/Clinic Name", "address": "456 Health Dr", "phone": "(555) 234-5678"},
-    {"category": "Education", "name": "School District Name", "address": "789 Education Blvd", "phone": "(555) 345-6789"},
-    {"category": "Utilities", "name": "Electric Company", "address": "321 Power St", "phone": "(555) 456-7890"},
-    {"category": "Internet", "name": "ISP Provider", "address": "654 Tech Ave", "phone": "(555) 567-8901"}
-  ],
-  "tax_information": {
-    "state_income_tax": "X.X% or No state tax",
-    "sales_tax_rate": "X.X%",
-    "property_tax_info": "Brief explanation of local property taxes"
-  }
-}
-
-Use realistic estimates based on ${city}'s actual cost of living. Research current market rates and provide helpful, accurate information for someone planning to move there.`;
-
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1-2025-04-14',
+      model: "gpt-4-1106-preview",
       messages: [
         {
-          role: 'system',
-          content: 'You are a cost analysis expert. Return only valid JSON with realistic cost data for the specified city. No markdown formatting, no code blocks, just pure JSON.'
+          role: "system",
+          content: "You are a financial planning and local resources specialist who creates comprehensive cost guides and resource directories. Always respond with well-formatted HTML that's ready for PDF conversion. Each text section must be EXACTLY 400 words."
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt
         }
       ],
+      max_tokens: 4000,
       temperature: 0.7,
-      max_tokens: 2000
     });
 
-    const content = completion.choices[0].message.content.trim();
-    console.log('🤖 Raw OpenAI response for costs:', content);
-
-    // Parse the JSON response
-    let costsData;
-    try {
-      costsData = JSON.parse(content);
-    } catch (parseError) {
-      console.error('❌ Failed to parse costs JSON:', parseError);
-      console.error('❌ Content that failed to parse:', content);
-      throw new Error('Invalid JSON response from OpenAI for costs data');
+    let htmlContent = completion.choices[0]?.message?.content || '';
+    htmlContent = htmlContent.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
+    
+    if (!htmlContent || htmlContent.trim().length < 100) {
+      throw new Error('OpenAI returned insufficient content for costs guide');
     }
 
-    // Validate the required structure
-    if (!costsData.housing_costs || !costsData.living_expenses || !costsData.local_resources) {
-      throw new Error('Incomplete costs data structure from OpenAI');
-    }
-
-    console.log('✅ Costs and resources data generated successfully');
-    console.log('📊 Housing costs keys:', Object.keys(costsData.housing_costs));
-    console.log('📊 Living expenses count:', costsData.living_expenses.length);
-    console.log('📊 Local resources count:', costsData.local_resources.length);
-
-    return costsData;
-
+    return htmlContent;
   } catch (error) {
-    console.error('❌ Error generating costs and resources:', error);
-    throw error;
+    console.error('❌ Error generating costs guide:', error);
+    throw new Error(`Costs guide generation failed: ${error.message}`);
   }
 };
 

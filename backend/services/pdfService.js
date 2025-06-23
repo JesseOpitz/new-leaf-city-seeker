@@ -94,19 +94,13 @@ const generatePDF = async (contentData, filename, city = '', state = '', documen
 
       case 'costs':
         console.log('💰 Processing costs guide template');
-        
-        // Validate costs data structure
-        if (!contentData.housing_costs || !contentData.living_expenses || !contentData.local_resources) {
-          console.warn('⚠️ Costs data incomplete, using fallback');
-          throw new Error('Incomplete costs data structure');
-        }
-        
+        // Add costs template processing here
         templateData = {
           ...contentData,
-          document_title: contentData.document_title || `Cost Breakdown & Local Resources for ${city}`
+          document_title: contentData.document_title || `Cost Overview & Resources for ${city}`
         };
-        
-        htmlContent = await generateFromTemplate('costs-template', templateData);
+        // For now, use a simple template until costs template is created
+        htmlContent = `<html><body><h1>${templateData.document_title}</h1><p>Cost guide content coming soon...</p></body></html>`;
         break;
 
       case 'family':
@@ -179,12 +173,6 @@ const generatePDF = async (contentData, filename, city = '', state = '', documen
     if (documentType === 'checklist') {
       console.log(`   Checklist items: ${contentData.checklist_items?.length || 0}`);
       console.log(`   Timeline phases: ${contentData.timeline_phases?.length || 0}`);
-    }
-
-    if (documentType === 'costs') {
-      console.log(`   Housing costs: ${Object.keys(contentData.housing_costs || {}).length} fields`);
-      console.log(`   Living expenses: ${contentData.living_expenses?.length || 0} categories`);
-      console.log(`   Local resources: ${contentData.local_resources?.length || 0} contacts`);
     }
     
     return tempPath;
