@@ -80,7 +80,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
           content: prompt
         }
       ],
-      max_tokens: 7000,
+      max_tokens: 4000,
       temperature: 0.7,
     });
 
@@ -221,7 +221,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
           content: prompt
         }
       ],
-      max_tokens: 7000,
+      max_tokens: 4000,
       temperature: 0.7,
     });
 
@@ -299,7 +299,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
           content: prompt
         }
       ],
-      max_tokens: 7000,
+      max_tokens: 4000,
       temperature: 0.7,
     });
 
@@ -409,7 +409,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
           content: prompt
         }
       ],
-      max_tokens: 7000,
+      max_tokens: 4000,
       temperature: 0.7,
     });
 
@@ -532,7 +532,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
           content: prompt
         }
       ],
-      max_tokens: 7000,
+      max_tokens: 4000,
       temperature: 0.7,
     });
 
