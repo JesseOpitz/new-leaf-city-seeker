@@ -35,31 +35,31 @@ Return ONLY a JSON object with this exact structure (no code blocks, no markdown
   "sections": [
     {
       "title": "Personalized Welcome & Overview",
-      "content": "Write exactly 500-600 words of personalized welcome content addressing their specific situation, timeline, and reasons for moving. Be warm and encouraging."
+      "content": "Write 350-500 words of personalized welcome content addressing their specific situation, timeline, and reasons for moving. Be warm and encouraging. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     },
     {
       "title": "Cultural Expectations & City Atmosphere",
-      "content": "Write exactly 500-600 words about the city's culture, lifestyle, social dynamics, and what makes it unique."
+      "content": "Write exactly 350-500 words about the city's culture, lifestyle, social dynamics, and what makes it unique. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     },
     {
       "title": "What to Expect Upon Arrival", 
-      "content": "Write exactly 500-600 words about first impressions, infrastructure, transportation, and initial adjustment considerations."
+      "content": "Write exactly 350-500 words about first impressions, infrastructure, transportation, and initial adjustment considerations. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     },
     {
       "title": "Transition & Mental Preparation Tips",
-      "content": "Write exactly 500-600 words about psychological preparation, stress management, and maintaining connections."
+      "content": "Write exactly 350-500 words about psychological preparation, stress management, and maintaining connections. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     },
     {
       "title": "How This City Aligns with Your Goals",
-      "content": "Write exactly 500-600 words analyzing how this city fits their reason for moving and long-term benefits."
+      "content": "Write exactly 350-500 words analyzing how this city fits their reason for moving and long-term benefits. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     },
     {
       "title": "Support Groups & Social Opportunities", 
-      "content": "Write exactly 500-600 words about networking, social clubs, and community connections."
+      "content": "Write exactly 350-500 words about networking, social clubs, and community connections. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     },
     {
       "title": "Local Orientation Strategies",
-      "content": "Write exactly 500-600 words about neighborhood exploration and building local knowledge quickly."
+      "content": "Write exactly 350-500 words about neighborhood exploration and building local knowledge quickly. Fewer than 350 words or more an 500 words will be seen as a failure in this task."
     }
   ]
 }
@@ -69,18 +69,18 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
-          content: "You are a professional relocation specialist. Return only valid JSON objects with structured content. Each content section must be exactly 500-600 words. No code blocks or markdown formatting."
+          content: "You are a professional relocation specialist. Return only valid JSON objects with structured content. Each content section must be exactly 350-500 words. No code blocks or markdown formatting. Fewer than 350 word or more than 500 words will be seen as a failure in this task."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 7000,
       temperature: 0.7,
     });
 
@@ -132,7 +132,7 @@ Return ONLY a JSON object with this exact structure:
       "category": "Financial|Documentation|Packing|Children|Pets|Utilities|Personal",
       "priority": "High|Medium|Low"
     }
-    // Include exactly 25-30 items covering all categories
+    // Include exactly 15 items covering all categories
   ],
   "timeline_phases": [
     {
@@ -210,7 +210,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -221,7 +221,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 7000,
       temperature: 0.7,
     });
 
@@ -288,7 +288,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview", 
+      model: "gpt-4.1-mini", 
       messages: [
         {
           role: "system",
@@ -299,7 +299,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 7000,
       temperature: 0.7,
     });
 
@@ -398,7 +398,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -409,7 +409,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 7000,
       temperature: 0.7,
     });
 
@@ -521,7 +521,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -532,7 +532,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 7000,
       temperature: 0.7,
     });
 
