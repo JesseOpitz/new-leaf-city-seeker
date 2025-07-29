@@ -69,7 +69,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
@@ -221,7 +221,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 40000,
       temperature: 0.7,
     });
 
