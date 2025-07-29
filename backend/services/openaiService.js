@@ -69,7 +69,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
