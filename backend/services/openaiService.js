@@ -210,7 +210,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -288,7 +288,7 @@ CRITICAL: Return only valid JSON. No markdown, no code blocks, no extra text.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview", 
+      model: "gpt-4.1-mini", 
       messages: [
         {
           role: "system",
@@ -398,7 +398,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -521,7 +521,7 @@ DO NOT wrap the output in code blocks. Return pure HTML only.
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
